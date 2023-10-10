@@ -6,104 +6,97 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
-    <Button
-        android:id="@+id/buttonUploadImage"
-        android:layout_width="148dp"
-        android:layout_height="69dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginTop="76dp"
-        android:text="그림 올리기"
+    <LinearLayout
+        android:id="@+id/linearLayout2"
+        android:layout_width="410dp"
+        android:layout_height="41dp"
+        android:layout_marginStart="1dp"
+        android:orientation="horizontal"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonUploadText" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <Button
-        android:id="@+id/buttonUploadVoice"
-        android:layout_width="153dp"
-        android:layout_height="71dp"
-        android:layout_marginStart="32dp"
-        android:text="음성 올리기"
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/buttonSendVoice"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/button_rectangle"
+            android:layout_marginRight="10dp"
+            android:text="마이크 켜기" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/btnRegister"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/button_rectangle"
+            android:layout_marginRight="10dp"
+            android:text="회원가입" />
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/buttonLogin"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="@drawable/button_rectangle"
+            android:layout_marginRight="10dp"
+            android:text="Login" />
+
+        <TextView
+            android:id="@+id/textUserName"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:background="#ABC5C8"
+            android:textAlignment="textStart"
+            android:textSize="18sp" />
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerView"
+        android:layout_width="399dp"
+        android:layout_height="600dp"
+        android:layout_marginStart="4dp"
+        android:orientation="vertical"
+        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/linearLayout2"
+        tools:listitem="@layout/items_recycler" />
+
+
+    <LinearLayout
+        android:layout_width="408dp"
+        android:layout_height="48dp"
+        android:layout_marginBottom="16dp"
+        android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/buttonUploadImage"
-        app:layout_constraintVertical_bias="0.436" />
+        app:layout_constraintTop_toBottomOf="@+id/recyclerView"
+        app:layout_constraintVertical_bias="0.235">
 
-    <Button
-        android:id="@+id/buttonUploadText"
-        android:layout_width="142dp"
-        android:layout_height="73dp"
-        android:layout_marginStart="40dp"
-        android:layout_marginTop="260dp"
-        android:text="글 올리기"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/buttonPlus"
+            android:layout_width="43dp"
+            android:layout_height="match_parent"
+            android:layout_marginRight="10dp"
+            android:background="@drawable/button_rectangle"
+            android:text="+"
+            android:textSize="24sp" />
 
-    <Button
-        android:id="@+id/buttonSendText"
-        android:layout_width="146dp"
-        android:layout_height="66dp"
-        android:layout_marginTop="260dp"
-        android:text="글 전달하기"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.427"
-        app:layout_constraintStart_toEndOf="@+id/buttonUploadText"
-        app:layout_constraintTop_toTopOf="parent" />
+        <EditText
+            android:id="@+id/editMessage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ems="10"
+            android:inputType="text"
+            android:text="보낼 메시지 입력하세요" />
 
-    <Button
-        android:id="@+id/buttonSendImage"
-        android:layout_width="138dp"
-        android:layout_height="60dp"
-        android:layout_marginStart="44dp"
-        android:layout_marginTop="92dp"
-        android:text="그림 전달하기"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.035"
-        app:layout_constraintStart_toEndOf="@+id/buttonUploadImage"
-        app:layout_constraintTop_toBottomOf="@+id/buttonSendText" />
+        <!--        <androidx.appcompat.widget.AppCompatButton-->
+<!--            android:id="@+id/buttonUploadImage"-->
+<!--            android:layout_width="68dp"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:layout_marginRight="10dp"-->
+<!--            android:background="@drawable/button_rectangle"-->
+<!--            android:text="그림U"-->
+<!--            android:textSize="12sp" />-->
 
-    <Button
-        android:id="@+id/buttonSendVoice"
-        android:layout_width="132dp"
-        android:layout_height="70dp"
-        android:layout_marginTop="80dp"
-        android:text="음성 전달하기"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.515"
-        app:layout_constraintStart_toEndOf="@+id/buttonUploadVoice"
-        app:layout_constraintTop_toBottomOf="@+id/buttonSendImage"
-        app:layout_constraintVertical_bias="0.0" />
+    </LinearLayout>
 
-    <Button
-        android:id="@+id/buttonLogin"
-        android:layout_width="109dp"
-        android:layout_height="53dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:text="Login"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <Button
-        android:id="@+id/btnRegister"
-        android:layout_width="108dp"
-        android:layout_height="54dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginTop="16dp"
-        android:text="회원가입"
-        app:layout_constraintEnd_toStartOf="@+id/textUserName"
-        app:layout_constraintHorizontal_bias="0.071"
-        app:layout_constraintStart_toEndOf="@+id/buttonLogin"
-        app:layout_constraintTop_toTopOf="parent" />
-
-    <TextView
-        android:id="@+id/textUserName"
-        android:layout_width="122dp"
-        android:layout_height="38dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="4dp"
-        android:background="#ABC5C8"
-        android:textAlignment="textStart"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

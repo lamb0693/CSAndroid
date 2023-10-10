@@ -3,20 +3,24 @@ package com.example.csapp
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.view.KeyEvent
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
-
+import androidx.recyclerview.widget.DividerItemDecoration
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.csapp.databinding.ActivityMainBinding
-import com.example.csapp.ui.drawimage.DrawImageActivity
+import com.example.csapp.ui.counselList.CouselListViewAdapter
 import com.example.csapp.ui.login.LoginActivity
 import com.example.csapp.ui.main.MainViewModel
 import com.example.csapp.ui.register.CreateMemberActivity
+
 
 class MainActivity : AppCompatActivity() {
 
@@ -49,12 +53,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var viewModel : MainViewModel
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
 
-        val bndMain = ActivityMainBinding.inflate(layoutInflater)
-        setContentView(bndMain.root)
-
+    fun checkPermission(){
         // permission을 확인하고, 없으면 요청한다
         val status = ContextCompat.checkSelfPermission(this,
             "android.permission.POST_NOTIFICATIONS")
@@ -69,14 +69,25 @@ class MainActivity : AppCompatActivity() {
             )
         }
         //End of request for permission
+    }
 
+    private lateinit var couselListViewAdapter : CouselListViewAdapter
+    val datas : List<String> = listOf<String>("Tom", "Jane", "Smith", "Wilson", "홍길동", "임꺽정",
+        "야마모토", "다나카", "와타나베", "링링", "웨이웨이", "위고", "프랑소아")
+    fun initRecyclerView(binding : ActivityMainBinding){
+        binding.recyclerView.layoutManager =LinearLayoutManager(this)
+        binding.recyclerView.adapter = CouselListViewAdapter(datas)
+        binding.recyclerView.addItemDecoration(DividerItemDecoration(this,LinearLayoutManager.VERTICAL))
+    }
 
-        bndMain.buttonUploadImage.setOnClickListener{
-            val intent = Intent(this, DrawImageActivity::class.java)
-            startActivity(intent)
-//            val testToast:Toast
-//            Toast.makeText(this@MainActivity, "clicked", Toast.LENGTH_SHORT).show()
-        }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+
+        val bndMain = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(bndMain.root)
+
+        checkPermission()
+        initRecyclerView(bndMain)
 
         /* viewModel 설정및 observer 선언 */
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
@@ -92,15 +103,42 @@ class MainActivity : AppCompatActivity() {
         }
         /*  viewModel 설정 끝 */
 
+        /* button 설정 */
+//        bndMain.buttonUploadImage.setOnClickListener{
+//            val intent = Intent(this, DrawImageActivity::class.java)
+//            startActivity(intent)
+//        }
+
         bndMain.buttonLogin.setOnClickListener(View.OnClickListener {
             val intent = Intent(this, LoginActivity::class.java)
             getResult.launch(intent)
         })
 
-        bndMain.btnRegister.setOnClickListener((View.OnClickListener {
+        bndMain.btnRegister.setOnClickListener(View.OnClickListener {
             val intent = Intent(this, CreateMemberActivity::class.java)
             startActivity(intent)
-        }))
+        })
 
+        bndMain.editMessage.setOnEditorActionListener { _, actionId, event ->
+            Log.i(">>", "Enter key in editMesssage")
+            //return@setOnEditorActionListener true
+            true// event를 propagation 하지 않고 consume
+        }
+
+        // enter 시 keyboard 내리기 ==> Error
+//        bndMain.editMessage.setOnKeyListener(View.OnKeyListener { v, keyCode, event ->
+//            Log.i("onCreate>>","key clicked" )
+//            if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
+//                val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
+//                imm.hideSoftInputFromWindow(bndMain.editMessage.windowToken, 0) //hide keyboard
+//                return@OnKeyListener true
+//            }
+//            false
+//        })
+
+
+        bndMain.buttonPlus.setOnClickListener(){
+            Log.i("onCreate>>", "+ button clicked")
+        }
     }
 }
