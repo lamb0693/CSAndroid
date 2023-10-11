@@ -1,11 +1,14 @@
 package com.example.csapp
 
 import android.app.Activity
+import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Toast
@@ -20,6 +23,7 @@ import com.example.csapp.ui.counselList.CouselListViewAdapter
 import com.example.csapp.ui.login.LoginActivity
 import com.example.csapp.ui.main.MainViewModel
 import com.example.csapp.ui.register.CreateMemberActivity
+import com.google.android.material.internal.ContextUtils.getActivity
 
 
 class MainActivity : AppCompatActivity() {
@@ -108,37 +112,70 @@ class MainActivity : AppCompatActivity() {
 //            val intent = Intent(this, DrawImageActivity::class.java)
 //            startActivity(intent)
 //        }
-
-        bndMain.buttonLogin.setOnClickListener(View.OnClickListener {
-            val intent = Intent(this, LoginActivity::class.java)
-            getResult.launch(intent)
-        })
-
-        bndMain.btnRegister.setOnClickListener(View.OnClickListener {
-            val intent = Intent(this, CreateMemberActivity::class.java)
-            startActivity(intent)
-        })
+        /***** menu 로 이동 ******/
+//        bndMain.buttonLogin.setOnClickListener(View.OnClickListener {
+//            val intent = Intent(this, LoginActivity::class.java)
+//            getResult.launch(intent)
+//        })
+        /***** menu 로 이동 ******/
+//        bndMain.btnRegister.setOnClickListener(View.OnClickListener {
+//            val intent = Intent(this, CreateMemberActivity::class.java)
+//            startActivity(intent)
+//        })
 
         bndMain.editMessage.setOnEditorActionListener { _, actionId, event ->
-            Log.i(">>", "Enter key in editMesssage")
+            Log.i("onCreate>>", "Enter key in editMesssage")
             //return@setOnEditorActionListener true
             true// event를 propagation 하지 않고 consume
         }
 
         // enter 시 keyboard 내리기 ==> Error
-//        bndMain.editMessage.setOnKeyListener(View.OnKeyListener { v, keyCode, event ->
-//            Log.i("onCreate>>","key clicked" )
-//            if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
-//                val imm = getSystemService(INPUT_METHOD_SERVICE) as InputMethodManager
-//                imm.hideSoftInputFromWindow(bndMain.editMessage.windowToken, 0) //hide keyboard
-//                return@OnKeyListener true
-//            }
-//            false
-//        })
+        bndMain.editMessage.setOnKeyListener(View.OnKeyListener { view, keyCode, event ->
+            Log.i("onCreate>>","key clicked" )
+            if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
+                val inputManager :InputMethodManager = view.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager ;
+                inputManager.hideSoftInputFromWindow(currentFocus?.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
+                return@OnKeyListener true
+            }
+            false
+        })
+        bndMain.editMessage.setOnFocusChangeListener{view, hasFocus ->
+            Log.i("onCreate>>", "focus changed to $hasFocus")
+            if(!hasFocus){
+                val inputManager :InputMethodManager = view.context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager ;
+                inputManager.hideSoftInputFromWindow(view.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
+            }
+        }
 
 
         bndMain.buttonPlus.setOnClickListener(){
             Log.i("onCreate>>", "+ button clicked")
         }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu?): Boolean {
+        //menu?.clear()
+        menuInflater.inflate(R.menu.option_menu, menu)
+        return super.onPrepareOptionsMenu(menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean = when(item.itemId){
+        R.id.menuLogin -> {
+            Log.i("onCreate>>", "menu1 clicked")
+            val intent = Intent(this, LoginActivity::class.java)
+            getResult.launch(intent)
+            true // 소모시켰으면 true
+        }
+        R.id.menuRegister-> {
+            Log.i("onCreate>>", "menu2 clicked")
+            val intent = Intent(this, CreateMemberActivity::class.java)
+            startActivity(intent)
+            true
+        }
+        else -> {
+            Log.i("onCreate>>", "else selected")
+            super.onOptionsItemSelected(item)
+        }
+        //return super.onOptionsItemSelected(item) 위의 else에 넣어줌
     }
 }
