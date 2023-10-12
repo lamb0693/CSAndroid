@@ -18,15 +18,25 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.csapp.data.Result
+import com.example.csapp.data.model.LoggedInUser
 import com.example.csapp.databinding.ActivityMainBinding
 import com.example.csapp.ui.counselList.CouselListViewAdapter
 import com.example.csapp.ui.login.LoginActivity
 import com.example.csapp.ui.main.MainViewModel
 import com.example.csapp.ui.register.CreateMemberActivity
 import com.google.android.material.internal.ContextUtils.getActivity
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.io.IOException
 
 
 class MainActivity : AppCompatActivity() {
+    lateinit var  bndMain : ActivityMainBinding
+
+    lateinit var counselList : List<CouselListDTO>
 
     private val permissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions()
@@ -39,22 +49,33 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+
     private val getResult = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ){ result->
         if(result.resultCode == Activity.RESULT_OK){
             val displayName = result.data?.getStringExtra("USER_NAME")
-            if(displayName!=null) viewModel.setDisplayName(displayName)
             val accessToken = result.data?.getStringExtra("ACCESS_TOKEN")
-            if(accessToken!=null) viewModel.setAccessToken(accessToken)
             val refreshToken = result.data?.getStringExtra("REFRRESH_TOKEN")
+            // viewModel observer에서 GlobalVariable을 사용 => 먼저 설정해 두어야 함
+            GlobalVariable.getInstance()?.setAccessToken(accessToken)
+            GlobalVariable.getInstance()?.setUserName(displayName)
+            GlobalVariable.getInstance()?.setRefreshToken(refreshToken)
+//**************   global varaiable 은 viewModel을 쓰면 없어져 버린다. ***********//
+            if(displayName!=null) viewModel.setDisplayName(displayName)
+            if(accessToken!=null) viewModel.setAccessToken(accessToken)
             if(refreshToken!=null) viewModel.setRefreshToken(refreshToken)
-            Log.i("getREsult@MainActivity>>", "displayName : $displayName")
-            Log.i("getREsult@MainActivity>>", "access token : $accessToken")
-            Log.i("getREsult@MainActivity>>", "refreshToken : $refreshToken")
+//            Log.i("getREsult@MainActivity>>", "displayName : $displayName")
+//            Log.i("getREsult@MainActivity>>", "access token : $accessToken")
+//            Log.i("getREsult@MainActivity>>", "refreshToken : $refreshToken")
+
+//          이 result는 binding 되기 전에 시행이라 이렇게 하면 안됨
+//            bndMain.textUserName.setText(displayName)
+
         }
     }
 
+    // 이것은 activity 만들면서 바로 만들어지므로 사용 가능
     private lateinit var viewModel : MainViewModel
 
 
@@ -87,25 +108,46 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        Log.i("onCreate@Main>> ", "onCreate@Main is called")
+
         val bndMain = ActivityMainBinding.inflate(layoutInflater)
         setContentView(bndMain.root)
 
         checkPermission()
-        initRecyclerView(bndMain)
 
         /* viewModel 설정및 observer 선언 */
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
 
-        viewModel.accessToken.observe(this) {
-            Log.i("onCreate@Main", "accessTokenChanged ${viewModel.accessToken.value}")
-        }
+//        viewModel.accessToken.observe(this) {
+//            Log.i("onCreate@Main", "accessTokenChanged ${viewModel.accessToken.value}")
+//        }
 
+        // viewModel에서  set 해도 다른 intent 갔다 오면 없어짐
+        // viewmodel이 바뀌면 GlobalVariable을 불러 사용
+        // 그냥 오면 result 가 없이 돌아오니 GlobalVarialble의 변수를 썼다
         viewModel.displayName.observe(this) {
             Log.i("onCreate@Main", "displayNameChanged ${viewModel.displayName.value}")
-            bndMain.textUserName.setText(viewModel.displayName.value)
+            bndMain.textUserName.text = viewModel.displayName.value
             if(viewModel.displayName.value != "anonymous") bndMain.buttonLogin.isEnabled = false
         }
+
+        GlobalScope.launch {
+            val ret : String = getCounselListFromServer()
+            Log.i("onCreate@Main>>", "lauch Result $ret")
+        }
+
+        // data 를 set  한 후  RecyclerView를 init
+        initRecyclerView(bndMain)
+
         /*  viewModel 설정 끝 */
+        /* global variable에서  usernaem이 있으면 불러옴 */
+        // 없어도 될듯 함 ..
+//        val userName :String? = GlobalVariable.getInstance()?.getUserName()
+//        if(userName != null) {
+//            bndMain.textUserName.setText(userName)
+//        } else {
+//            Log.i("onCreate@Main>> ", "userName in globalVariable is null")
+//        }
 
         /* button 설정 */
 //        bndMain.buttonUploadImage.setOnClickListener{
@@ -129,7 +171,7 @@ class MainActivity : AppCompatActivity() {
             true// event를 propagation 하지 않고 consume
         }
 
-        // enter 시 keyboard 내리기 ==> Error
+        // enter 시 keyboard 내리기 ==> avd 에서는 안됨  why?
         bndMain.editMessage.setOnKeyListener(View.OnKeyListener { view, keyCode, event ->
             Log.i("onCreate>>","key clicked" )
             if (event.action == KeyEvent.ACTION_DOWN && keyCode == KeyEvent.KEYCODE_ENTER) {
@@ -151,6 +193,35 @@ class MainActivity : AppCompatActivity() {
         bndMain.buttonPlus.setOnClickListener(){
             Log.i("onCreate>>", "+ button clicked")
         }
+    }
+
+    // Server 로 부터 counselList를 가져 온다
+    private suspend fun getCounselListFromServer() : String {
+        Log.i("getCounselListFromServer@Main", "getCounselListFromServer executed")
+        try {
+            val strToken : String? = GlobalVariable.getInstance()?.getAccessToken()
+            if(strToken == null) return ("accesstoken null")
+            var username : String? = GlobalVariable.getInstance()?.getUserName()
+            if(username == null) return ("username null")
+            //  suspend 안에서 withContext(Dispatcher.IO) main thread가 아닌 thread로 실행
+            val response = withContext(Dispatchers.IO) {
+                RetrofitObject.getApiService().listBoard("Bearer:"+strToken, username, 10).execute()
+            }
+
+            // response 를 처리
+            if(response.isSuccessful){
+                counselList = response.body() as MutableList<CouselListDTO>
+                Log.i("getCounselListFromServer >>", "Success")
+                return "success"
+            }else {
+                Log.i("login >>", "bad request ${response.code()}")
+                Log.i("login >>", "login Fail")
+                return "error bad request ${response.code()}"
+            }
+        } catch (e: Throwable) {
+            return e.message!!
+        }
+
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
