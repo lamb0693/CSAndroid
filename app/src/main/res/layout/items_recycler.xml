@@ -21,8 +21,8 @@
 
     <TextView
         android:id="@+id/tv_rv_content"
-        android:layout_width="50dp"
-        android:layout_height="match_parent"
+        android:layout_width="64dp"
+        android:layout_height="27dp"
         android:layout_marginStart="10dp"
         android:text="이름"
         android:textColor="@color/black"
@@ -33,8 +33,8 @@
 
     <TextView
         android:id="@+id/tv_rv_message"
-        android:layout_width="221dp"
-        android:layout_height="match_parent"
+        android:layout_width="204dp"
+        android:layout_height="26dp"
         android:text="이름"
         android:textColor="@color/black"
         android:textSize="18sp"
