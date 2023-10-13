@@ -11,6 +11,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -110,11 +111,12 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         // 여기서 부르면 null 이 됨,  따라서 밑의 사항은 안 됨
-        val txtName : TextView? = findViewById<TextView>(R.id.username)
-        if(txtName == null) Log.i("onResume@MainActivity", "txtName : null")
-        txtName?.text = viewModel.displayName.value
-        if(txtName?.text != null && !txtName.text.equals("anonymous"))
-            txtName.isEnabled = false
+        val txtUserName : TextView? = findViewById<TextView>(R.id.textUserName)
+        val btnLogin  = findViewById<Button>(R.id.buttonLogin)
+        if(txtUserName == null) Log.i("onResume@MainActivity", "txtUserName : null")
+        txtUserName?.text = viewModel.displayName.value
+        if(txtUserName?.text != null && !txtUserName.text.equals("anonymous"))
+            btnLogin.isEnabled = false
         //binding이 없어 사망한다
         //if(bndMain!=null && viewModel.displayName.value != "anonymous") bndMain.buttonLogin.isEnabled = false
         Log.i("onResume@MainActivity>>", "is Called" )
@@ -237,7 +239,7 @@ class MainActivity : AppCompatActivity() {
             // response 를 처리
             if(response.isSuccessful){
                 val result = response.body() as MutableList<CouselListDTO>
-                // main의 변수를 건드리면 Dispatchers.Main에서 시행
+                // main의 변수를 건드리려면 Dispatchers.Main에서 시행
                 withContext(Dispatchers.Main) {
                     viewModel.setCounselList(result)
                     Log.i("getCounselListFromServer >>counselList", "$result")
