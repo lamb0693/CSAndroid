@@ -11,6 +11,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -108,6 +109,12 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        // 여기서 부르면 null 이 됨,  따라서 밑의 사항은 안 됨
+        val txtName : TextView? = findViewById<TextView>(R.id.username)
+        if(txtName == null) Log.i("onResume@MainActivity", "txtName : null")
+        txtName?.text = viewModel.displayName.value
+        if(txtName?.text != null && !txtName.text.equals("anonymous"))
+            txtName.isEnabled = false
         //binding이 없어 사망한다
         //if(bndMain!=null && viewModel.displayName.value != "anonymous") bndMain.buttonLogin.isEnabled = false
         Log.i("onResume@MainActivity>>", "is Called" )
@@ -115,7 +122,7 @@ class MainActivity : AppCompatActivity() {
 
     /*
      *MainViewModel을 초기화 하고   observer를 설정
-     */
+    */
     fun initializeViewModel(bndMain : ActivityMainBinding){
         /* viewModel 설정및 observer 선언 */
         viewModel = ViewModelProvider(this)[MainViewModel::class.java]
