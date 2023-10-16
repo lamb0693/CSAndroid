@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item
+        android:id="@+id/menuPicture"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:title="사진보내기" />
+    <item
+        android:id="@+id/menuPaint"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:title="그림 그려 보내기" />
+    <item
+        android:id="@+id/menuReserved"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:title="예비메뉴" />
+</menu>

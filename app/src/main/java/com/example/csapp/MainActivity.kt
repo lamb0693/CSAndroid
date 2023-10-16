@@ -12,6 +12,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
+import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
@@ -22,6 +23,7 @@ import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.csapp.databinding.ActivityMainBinding
 import com.example.csapp.ui.counselList.CouselListViewAdapter
+import com.example.csapp.ui.drawimage.DrawImageActivity
 import com.example.csapp.ui.login.LoginActivity
 import com.example.csapp.ui.main.MainViewModel
 import com.example.csapp.ui.register.CreateMemberActivity
@@ -29,6 +31,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import retrofit2.Retrofit
+import retrofit2.converter.scalars.ScalarsConverterFactory
 
 
 class MainActivity : AppCompatActivity() {
@@ -115,8 +119,6 @@ class MainActivity : AppCompatActivity() {
         val btnLogin  = findViewById<Button>(R.id.buttonLogin)
         if(txtUserName == null) Log.i("onResume@MainActivity", "txtUserName : null")
         txtUserName?.text = viewModel.displayName.value
-        if(txtUserName?.text != null && !txtUserName.text.equals("anonymous"))
-            btnLogin.isEnabled = false
         //binding이 없어 사망한다
         //if(bndMain!=null && viewModel.displayName.value != "anonymous") bndMain.buttonLogin.isEnabled = false
         Log.i("onResume@MainActivity>>", "is Called" )
@@ -138,11 +140,19 @@ class MainActivity : AppCompatActivity() {
         viewModel.displayName.observe(this) {
             Log.i("onCreate@Main", "displayNameChanged ${viewModel.displayName.value}")
             var username : String? = GlobalVariable.getInstance()?.getUserName()
-            bndMain.textUserName.text = username
-            if(!username.equals("anonymous")) bndMain.buttonLogin.isEnabled = false
-            GlobalScope.launch {
-                val ret : String = getCounselListFromServer()
-                Log.i("displayName.observe@Main>>", "lauch Result $ret")
+            if(username != null && !username.equals("anonymous")){
+                Log.i("displayName.observe  username>>", username)
+                bndMain.textUserName.text  = username
+                bndMain.buttonLogin.isEnabled = false
+                // username(tel)이 있으면 상담 내역을 불러와서  setting 한다
+                GlobalScope.launch {
+                    val ret : String = getCounselListFromServer()
+                    Log.i("displayName.observe@Main>>", "lauch Result $ret")
+                }
+            } else {
+                Log.i("displayName.observe  username >>", "null")
+                bndMain.textUserName.text  = "anonymous"
+                bndMain.buttonLogin.isEnabled = true
             }
         }
 
@@ -151,6 +161,67 @@ class MainActivity : AppCompatActivity() {
             counselListViewAdapter.setData(newList)
             counselListViewAdapter.notifyDataSetChanged()
         }
+    }
+
+    /*
+    * plus button에 대한  floating menu 설정
+    * binding이 아직 없으니 methoid 설정 단계에서  error. 매개변수로  binding 넣어야
+    */
+    fun showPulsPopupMenu(binding : ActivityMainBinding){
+        Log.i("onCreate>>", "+ button clicked")
+        val popUpMenu = PopupMenu(this, binding.buttonPlus)
+        popUpMenu.menuInflater.inflate(R.menu.plus_menu, popUpMenu.menu)
+        popUpMenu.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                R.id.menuPicture -> {
+                    Log.i("onCreate>>", "menuPicture clicked")
+                    return@setOnMenuItemClickListener true
+                }
+                R.id.menuPaint -> {
+                    Log.i("onCreate>>", "menuPaint clicked")
+                    val intent = Intent(this, DrawImageActivity::class.java)
+                    startActivity(intent)
+                    return@setOnMenuItemClickListener true
+                }
+                else -> return@setOnMenuItemClickListener false
+            }
+        }
+        popUpMenu.show()
+    }
+
+    // chatting message를 upload
+    suspend fun uploadChatMessage(binding: ActivityMainBinding) : String {
+        Log.i("uploadChatMessage@Main", "uploadChatMessage executed")
+        try {
+            val strToken : String? = GlobalVariable.getInstance()?.getAccessToken()
+            if(strToken == null) return ("accesstoken null")
+            var username : String? = GlobalVariable.getInstance()?.getUserName()
+            if(username == null) return ("username null")
+            if(binding.editMessage.text.toString().equals("")) return ("no message")
+
+            // return이 plain text라 scalar인 service를 사용한다
+            val response = withContext(Dispatchers.IO) {
+                RetrofitScalarObject.getApiService().createBoard("Bearer:"+strToken,
+                    username, "TEXT", binding.editMessage.text.toString(), null).execute()
+            }
+
+            // response 를 처리 성공하면 counselList를 새로 불러 온다
+            if(response.isSuccessful){
+                val result = response.body() as String
+                Log.i("uploadChatMessage >>>>", "$result")
+                withContext(Dispatchers.Main) {
+                    getCounselListFromServer()
+                    binding.editMessage.setText("")
+                }
+                return "success"
+            }else {
+                Log.i("login >>", "bad request ${response.code()}")
+                return "error bad request ${response.code()}"
+            }
+        } catch (e: Throwable) {
+            return e.message!!
+        }
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -178,11 +249,11 @@ class MainActivity : AppCompatActivity() {
 //            val intent = Intent(this, DrawImageActivity::class.java)
 //            startActivity(intent)
 //        }
-        /***** menu 로 이동 ******/
-//        bndMain.buttonLogin.setOnClickListener(View.OnClickListener {
-//            val intent = Intent(this, LoginActivity::class.java)
-//            getResult.launch(intent)
-//        })
+        /***** Login button ******/
+        bndMain.buttonLogin.setOnClickListener(View.OnClickListener {
+            val intent = Intent(this, LoginActivity::class.java)
+            getResult.launch(intent)
+        })
 
         /***** menu 로 이동 ******/
         bndMain.btnRegister.setOnClickListener(View.OnClickListener {
@@ -206,6 +277,7 @@ class MainActivity : AppCompatActivity() {
             }
             false
         })
+        // focus 잃으면 keyboard 내리기 ?
         bndMain.editMessage.setOnFocusChangeListener{view, hasFocus ->
             Log.i("onCreate>>", "focus changed to $hasFocus")
             if(!hasFocus){
@@ -214,15 +286,23 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-
+        // 플러스 버튼에 대한  Listener
         bndMain.buttonPlus.setOnClickListener(){
-            Log.i("onCreate>>", "+ button clicked")
+            showPulsPopupMenu(bndMain)
         }
 
+        bndMain.buttonSendMessage.setOnClickListener{
+            Log.i("onCreate>>", "sendMessageButton Clicked")
+            GlobalScope.launch {
+                val ret : String = uploadChatMessage(bndMain)
+                Log.i("buttonSendMessage@Main>>", "lauch Result $ret")
+            }
+        }
     }
 
     /*
      * Server 로 부터 counselList를 가져 온다
+     * 가져오는 숫자 나중에 조절
      */
     private suspend fun getCounselListFromServer() : String {
         Log.i("getCounselListFromServer@Main", "getCounselListFromServer executed")
@@ -233,7 +313,7 @@ class MainActivity : AppCompatActivity() {
             if(username == null) return ("username null")
             //  suspend Networdk function은 안에서 main thread가 아닌 thread로 실행
             val response = withContext(Dispatchers.IO) {
-                RetrofitObject.getApiService().listBoard("Bearer:"+strToken, username, 10).execute()
+                RetrofitObject.getApiService().listBoard("Bearer:"+strToken, username, 50).execute()
             }
 
             // response 를 처리
@@ -256,6 +336,8 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
+
+
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
         //menu?.clear()
@@ -282,4 +364,5 @@ class MainActivity : AppCompatActivity() {
         }
         //return super.onOptionsItemSelected(item) 위의 else에 넣어줌
     }
+
 }
