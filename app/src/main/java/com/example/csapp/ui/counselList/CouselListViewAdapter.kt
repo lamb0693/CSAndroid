@@ -14,8 +14,9 @@ class CouselListViewAdapter(var counselList: MutableList<CouselListDTO>)
         counselList = newData
     }
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder  =
-        CounselListViewHolder(ItemsRecyclerBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder{
+        return CounselListViewHolder(ItemsRecyclerBinding.inflate(LayoutInflater.from(parent.context), parent, false))
+    }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
         Log.i("onBindViewHolder>>", "position : $position")

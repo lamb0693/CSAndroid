@@ -67,4 +67,13 @@ class DrawImageViewModel : ViewModel() {
         _pointList.value = mutableListOf<PointF>()
         Log.i(TAG, "_pointList cleared=${_pointList.value}")
     }
+
+    fun setLineList(lineList : Array<Array<PointF>>){
+        val newLineList = mutableListOf<Array<PointF>>()
+        for(line :Array<PointF> in newLineList){
+            newLineList.add(line)
+        }
+        _lineList.value = newLineList
+        Log.i(TAG, "_lineList made=${_lineList.value}")
+    }
 }

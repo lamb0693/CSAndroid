@@ -1,5 +1,6 @@
 package com.example.csapp.ui.drawimage
 
+import android.graphics.PointF
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -7,6 +8,7 @@ import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.csapp.GlobalVariable
+import com.example.csapp.PointSerializable
 import com.example.csapp.R
 import com.example.csapp.RetrofitScalarObject
 import com.example.csapp.databinding.ActivityDrawImageBinding
@@ -18,6 +20,8 @@ import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import java.io.File
+import java.io.FileInputStream
+import java.io.ObjectInputStream
 
 
 class DrawImageActivity : AppCompatActivity() {
@@ -66,6 +70,11 @@ class DrawImageActivity : AppCompatActivity() {
         }
     }
 
+    fun readImageFromFile(strFileName: String){
+
+    }
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -90,15 +99,21 @@ class DrawImageActivity : AppCompatActivity() {
         })
 
         bnImageView.buttonUpload.setOnClickListener{
+            //   현재의 lineList를 저장하고 file이름을 return으로 받음
             val strSavedFilename : String = myView.saveCurrentImage()
-            Log.i("strSavedFilename>>>", strSavedFilename)
+            //Log.i("strSavedFilename>>>", strSavedFilename)
 
-            val fileDirectory = this.applicationContext.filesDir // Get the directory where your files are stored
-            val fileList = fileDirectory.listFiles()
-            for(file : File in fileList) {
-                Log.i("fileList", file.name)
-            }
 
+//            val fileDirectory = this.applicationContext.filesDir // Get the directory where your files are stored
+//              읽기 시험
+//            val fileList = fileDirectory.listFiles()
+//            for(file : File in fileList) {
+//                Log.i("fileList", file.name)
+//            }
+
+
+
+            // file upload
             GlobalScope.launch {
                 val ret : String = uploadImage(strSavedFilename )
                 Log.i("onCreate@Main>>", "lauch Result $ret")

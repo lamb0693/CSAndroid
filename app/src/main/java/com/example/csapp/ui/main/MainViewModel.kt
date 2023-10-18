@@ -51,4 +51,7 @@ class MainViewModel : ViewModel() {
         _counselList.value = newList
     }
 
+    fun getIdFromCounselList(index : Int) : Long? {
+        return _counselList.value?.get(index)?.board_id
+    }
 }

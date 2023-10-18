@@ -4,6 +4,8 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Point
+
 import android.graphics.PointF
 import android.util.Log
 import android.view.MotionEvent
@@ -13,9 +15,12 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
+import com.example.csapp.PointSerializable
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.ObjectInputStream
 import java.io.ObjectOutputStream
 
 
@@ -135,13 +140,28 @@ class DrawImageView(context : Context) : View(context) {
             // Serialize the object to a byte array
             val bos = ByteArrayOutputStream()
             val oos = ObjectOutputStream(bos)
-            oos.writeObject(viewModel.lineList.value?.toList())
+
+
+            //viewModel의 lineList를  ArrayList<ArrayList<PointF>>로 변경
+            val lineList : Array<Array<PointF>>? = viewModel.lineList.value?.toTypedArray()
+            val lineListAL  = ArrayList<ArrayList<PointSerializable>>()
+
+            if(lineList != null){
+                for(line : Array<PointF> in lineList){
+                    var lineAL = ArrayList<PointSerializable>()
+                    for(point : PointF in line){
+                        lineAL.add( PointSerializable(point.x.toInt(), point.y.toInt()))
+                    }
+                    lineListAL.add( lineAL )
+                }
+            }
+            // oos  에 출력
+            oos.writeObject(lineListAL)
             oos.flush()
-            val objectBytes = bos.toByteArray()
 
-
+            // fileoutputStream을 열고 저장
             var fos : FileOutputStream = context.openFileOutput(strFileName, Context.MODE_PRIVATE )
-            fos.write(objectBytes)
+            fos.write(bos.toByteArray())
             fos.flush()
             fos.close()
 
@@ -158,5 +178,40 @@ class DrawImageView(context : Context) : View(context) {
 
         return strFileName
     }
+
+    // file을 읽어서 viewModel에 upload
+    fun readImageFromFile(strFileName : String){
+        val fileDirectory = contextParent.filesDir // Get the directory where your files are stored
+
+        // file 열어서 Array<Array<PointF>> 형식으로 저장
+        try {
+            // Open the file for reading
+            val fis = FileInputStream(File(fileDirectory, strFileName))
+            val ois = ObjectInputStream(fis)
+
+            // Load the data as ArrayList<ArrayList<PointSerializable>>
+            val loadedData = ois.readObject() as ArrayList<ArrayList<PointSerializable>>
+
+            // Initialize an empty Array<Array<PointF>>
+            val data: Array<Array<PointF>> = Array(loadedData.size) { Array(0) { PointF(0f, 0f) } }
+
+            // Convert the data into the desired structure
+            for (i in loadedData.indices) {
+                val row = loadedData[i]
+                data[i] = Array(row.size) {
+                    PointF(row[it].x.toFloat(), row[it].y.toFloat())
+                }
+            }
+            Log.i("read file ... ", "${data}")
+            // Now 'data' contains the converted data as an Array<Array<PointF>>
+            ois.close()
+
+            viewModel.setLineList(data)
+
+        } catch (e: Exception) {
+            Log.e("read file ... ", "${e.message}")
+        }
+    }
+
 
 }
