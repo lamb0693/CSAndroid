@@ -1,6 +1,5 @@
 package com.example.csapp.ui.drawimage
 
-import android.app.Activity
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
@@ -9,15 +8,20 @@ import android.graphics.PointF
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
-import androidx.appcompat.app.AppCompatActivity
+import android.widget.Toast
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
+import java.io.ByteArrayOutputStream
+import java.io.File
+import java.io.FileOutputStream
+import java.io.ObjectOutputStream
+
 
 class DrawImageView(context : Context) : View(context) {
     val TAG = "DrawImageView"
+    lateinit var contextParent : Context
 
     val paint : Paint = Paint(Paint.ANTI_ALIAS_FLAG).apply{
         style = Paint.Style.FILL
@@ -28,6 +32,7 @@ class DrawImageView(context : Context) : View(context) {
     private lateinit var viewModel : DrawImageViewModel
 
     init {
+        this.contextParent = context as Context
         val currentActivity = context as ViewModelStoreOwner
         viewModel = ViewModelProvider(currentActivity)[DrawImageViewModel::class.java]
 
@@ -116,6 +121,42 @@ class DrawImageView(context : Context) : View(context) {
     fun clearAll() : Unit{
         viewModel.clearAll()
         // invalidate() observer  에서 onDraw를 부르니 중복하면 안됨
+    }
+
+    fun saveCurrentImage() : String {
+        lateinit var strFileName : String
+        Toast.makeText(contextParent, "saving", Toast.LENGTH_SHORT)
+
+        try {
+            val strTime : Long = System.currentTimeMillis()
+            strFileName = "boardImage" + strTime + ".csr"
+            //val fileConent = "Hello World"
+
+            // Serialize the object to a byte array
+            val bos = ByteArrayOutputStream()
+            val oos = ObjectOutputStream(bos)
+            oos.writeObject(viewModel.lineList.value?.toList())
+            oos.flush()
+            val objectBytes = bos.toByteArray()
+
+
+            var fos : FileOutputStream = context.openFileOutput(strFileName, Context.MODE_PRIVATE )
+            fos.write(objectBytes)
+            fos.flush()
+            fos.close()
+
+            oos.close()
+            bos.close()
+
+            Log.i("saveCurrentImage@DrawImageView>>", "file saved")
+            Toast.makeText(contextParent, "file saved", Toast.LENGTH_SHORT).show()
+
+        } catch (e: Exception) {
+            Log.i("saveCurrentImage@DrawImageView>>", "saving to file error : ${e.message}")
+            Toast.makeText(contextParent, "saving to file error : ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+
+        return strFileName
     }
 
 }

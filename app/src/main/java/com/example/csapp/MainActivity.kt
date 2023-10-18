@@ -122,6 +122,11 @@ class MainActivity : AppCompatActivity() {
         //binding이 없어 사망한다
         //if(bndMain!=null && viewModel.displayName.value != "anonymous") bndMain.buttonLogin.isEnabled = false
         Log.i("onResume@MainActivity>>", "is Called" )
+
+        GlobalScope.launch {
+            val ret : String = getCounselListFromServer()
+            Log.i("onResume@Main>>", "lauch Result $ret")
+        }
     }
 
     /*
