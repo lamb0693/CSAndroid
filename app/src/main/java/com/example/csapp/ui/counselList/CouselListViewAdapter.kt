@@ -10,6 +10,19 @@ import com.example.csapp.databinding.ItemsRecyclerBinding
 class CouselListViewAdapter(var counselList: MutableList<CouselListDTO>)
     : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
+    //**** add for click listener on view Holder (2)  OnItemClickListener 는 밑에
+    private var itemClickListener: OnItemClickListener? = null
+
+    //**** add for click listener on view Holder (1)
+    interface OnItemClickListener {
+        fun onItemClick(position: Int)
+    }
+
+    //**** add for click listener on view Holder (3)
+    fun setOnItemClickListener(listener: OnItemClickListener) {
+        itemClickListener = listener
+    }
+
     fun setData(newData: MutableList<CouselListDTO>) {
         counselList = newData
     }
@@ -29,6 +42,11 @@ class CouselListViewAdapter(var counselList: MutableList<CouselListDTO>)
             binding.tvRvMessage.text = counselList[position].message
         } catch (e: Exception) {
             Log.e("Adapter", "Error binding data at position $position: ${e.message}")
+        }
+
+        //**** add for click listener on view Holder (4)
+        holder.itemView.setOnClickListener {
+            itemClickListener?.onItemClick(position)
         }
     }
 

@@ -16,18 +16,4 @@ class CounselListViewHolder(val binding : ItemsRecyclerBinding): RecyclerView.Vi
         })
     }
 
-    //===== [Click 이벤트 구현을 위해 추가된 코드] 만든 코드==========================
-    interface OnItemClickListener {
-        fun onItemClicked(position: Int, data: String?)
-    }
-
-    // OnItemClickListener 참조 변수 선언
-    private var itemClickListener: OnItemClickListener? = null
-
-    // OnItemClickListener 전달 메소드
-    fun setOnItemClickListener(listener: OnItemClickListener?) {
-        itemClickListener = listener
-    }
-    //===== [Click 이벤트 구현을 위해 추가된 코드] 만든 코드 끝========================
-
 }

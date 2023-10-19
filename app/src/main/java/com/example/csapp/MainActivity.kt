@@ -110,6 +110,17 @@ class MainActivity : AppCompatActivity() {
         binding.recyclerView.layoutManager =LinearLayoutManager(this)
         binding.recyclerView.adapter = counselListViewAdapter
         binding.recyclerView.addItemDecoration(DividerItemDecoration(this,LinearLayoutManager.VERTICAL))
+
+        // adapter에 내가 만든 listener를 설정한다.
+        counselListViewAdapter.setOnItemClickListener(object : CouselListViewAdapter.OnItemClickListener {
+            override fun onItemClick(position: Int) {
+                // Handle the item click here
+                //val clickedItem = yourCounselListData[position]
+                Log.i("counselListViewAdapter setOnItemClickListener>> position : ", "${position}")
+                // Perform the desired action when an item is clicked
+                launchCustomDialog()
+            }
+        })
     }
 
     override fun onResume() {
@@ -226,6 +237,10 @@ class MainActivity : AppCompatActivity() {
         } catch (e: Throwable) {
             return e.message!!
         }
+
+    }
+
+    fun launchCustomDialog(){
 
     }
 
