@@ -4,8 +4,6 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
-import android.graphics.Point
-
 import android.graphics.PointF
 import android.util.Log
 import android.view.MotionEvent
@@ -16,12 +14,14 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import com.example.csapp.PointSerializable
-import java.io.ByteArrayOutputStream
+import com.google.gson.Gson
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.FileWriter
+import java.io.IOException
 import java.io.ObjectInputStream
-import java.io.ObjectOutputStream
+import java.io.OutputStreamWriter
 
 
 class DrawImageView(context : Context) : View(context) {
@@ -135,12 +135,6 @@ class DrawImageView(context : Context) : View(context) {
         try {
             val strTime : Long = System.currentTimeMillis()
             strFileName = "boardImage" + strTime + ".csr"
-            //val fileConent = "Hello World"
-
-            // Serialize the object to a byte array
-            val bos = ByteArrayOutputStream()
-            val oos = ObjectOutputStream(bos)
-
 
             //viewModel의 lineList를  ArrayList<ArrayList<PointF>>로 변경
             val lineList : Array<Array<PointF>>? = viewModel.lineList.value?.toTypedArray()
@@ -155,18 +149,22 @@ class DrawImageView(context : Context) : View(context) {
                     lineListAL.add( lineAL )
                 }
             }
-            // oos  에 출력
-            oos.writeObject(lineListAL)
-            oos.flush()
 
-            // fileoutputStream을 열고 저장
-            var fos : FileOutputStream = context.openFileOutput(strFileName, Context.MODE_PRIVATE )
-            fos.write(bos.toByteArray())
-            fos.flush()
-            fos.close()
+            // Gson을 이용 Json으로 변경
+            val gson = Gson()
+            val jsonOutput = gson.toJson(lineList)
 
-            oos.close()
-            bos.close()
+            // Save the JSON to a file
+            try {
+                val fileOutputStream = context.openFileOutput(strFileName, Context.MODE_PRIVATE)
+                val outputStreamWriter = OutputStreamWriter(fileOutputStream)
+                    outputStreamWriter.use {
+                        it.write(jsonOutput)
+                }
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+
 
             Log.i("saveCurrentImage@DrawImageView>>", "file saved")
             Toast.makeText(contextParent, "file saved", Toast.LENGTH_SHORT).show()
@@ -178,6 +176,58 @@ class DrawImageView(context : Context) : View(context) {
 
         return strFileName
     }
+
+//      Json을 이용해 저장하는 방법으로 대치 예정
+//    fun saveCurrentImage() : String {
+//        lateinit var strFileName : String
+//        Toast.makeText(contextParent, "saving", Toast.LENGTH_SHORT)
+//
+//        try {
+//            val strTime : Long = System.currentTimeMillis()
+//            strFileName = "boardImage" + strTime + ".csr"
+//            //val fileConent = "Hello World"
+//
+//            // Serialize the object to a byte array
+//            val bos = ByteArrayOutputStream()
+//            val oos = ObjectOutputStream(bos)
+//
+//
+//            //viewModel의 lineList를  ArrayList<ArrayList<PointF>>로 변경
+//            val lineList : Array<Array<PointF>>? = viewModel.lineList.value?.toTypedArray()
+//            val lineListAL  = ArrayList<ArrayList<PointSerializable>>()
+//
+//            if(lineList != null){
+//                for(line : Array<PointF> in lineList){
+//                    var lineAL = ArrayList<PointSerializable>()
+//                    for(point : PointF in line){
+//                        lineAL.add( PointSerializable(point.x.toInt(), point.y.toInt()))
+//                    }
+//                    lineListAL.add( lineAL )
+//                }
+//            }
+//            // oos  에 출력
+//            oos.writeObject(lineListAL)
+//            oos.flush()
+//
+//            // fileoutputStream을 열고 저장
+//            var fos : FileOutputStream = context.openFileOutput(strFileName, Context.MODE_PRIVATE )
+//            fos.write(bos.toByteArray())
+//            fos.flush()
+//            fos.close()
+//
+//            oos.close()
+//            bos.close()
+//
+//            Log.i("saveCurrentImage@DrawImageView>>", "file saved")
+//            Toast.makeText(contextParent, "file saved", Toast.LENGTH_SHORT).show()
+//
+//        } catch (e: Exception) {
+//            Log.i("saveCurrentImage@DrawImageView>>", "saving to file error : ${e.message}")
+//            Toast.makeText(contextParent, "saving to file error : ${e.message}", Toast.LENGTH_SHORT).show()
+//        }
+//
+//        return strFileName
+//    }
 
     // file을 읽어서 viewModel에 upload
     fun readImageFromFile(strFileName : String){
