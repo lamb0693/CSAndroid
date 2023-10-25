@@ -6,54 +6,82 @@
     android:layout_height="match_parent"
     tools:context=".MainActivity">
 
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:background="?attr/colorPrimary"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="?attr/actionBarTheme"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <LinearLayout
         android:id="@+id/linearLayout2"
         android:layout_width="410dp"
         android:layout_height="41dp"
-        android:layout_marginStart="1dp"
+        android:layout_marginStart="4dp"
+        android:background="#333333"
         android:orientation="horizontal"
+        android:padding="5dp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toBottomOf="@+id/toolbar">
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/buttonSendVoice"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:background="@drawable/button_rectangle"
             android:layout_marginRight="10dp"
-            android:text="마이크 켜기" />
+            android:background="@drawable/button_rectangle"
+            android:text="MIC" />
+
+        <!--        <androidx.appcompat.widget.AppCompatButton-->
+        <!--            android:id="@+id/btnRegister"-->
+        <!--            android:layout_width="wrap_content"-->
+        <!--            android:layout_height="match_parent"-->
+        <!--            android:background="@drawable/button_rectangle"-->
+        <!--            android:layout_marginRight="10dp"-->
+        <!--            android:text="회원가입" />-->
+
+        <!--        <androidx.appcompat.widget.AppCompatButton-->
+        <!--            android:id="@+id/buttonLogin"-->
+        <!--            android:layout_width="wrap_content"-->
+        <!--            android:layout_height="match_parent"-->
+        <!--            android:background="@drawable/button_rectangle"-->
+        <!--            android:layout_marginRight="10dp"-->
+        <!--            android:text="Login" />-->
 
         <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/btnRegister"
+            android:id="@+id/buttonConnectCSR"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
-            android:background="@drawable/button_rectangle"
             android:layout_marginRight="10dp"
-            android:text="회원가입" />
+            android:background="@drawable/button_rectangle"
+            android:text="상담원" />
 
-        <androidx.appcompat.widget.AppCompatButton
-            android:id="@+id/buttonLogin"
-            android:layout_width="wrap_content"
+        <TextView
+            android:id="@+id/textCSRName"
+            android:layout_width="80dp"
             android:layout_height="match_parent"
-            android:background="@drawable/button_rectangle"
             android:layout_marginRight="10dp"
-            android:text="Login" />
+            android:background="#ABC5C8"
+            android:text="CSR"
+            android:textSize="18sp" />
 
         <TextView
             android:id="@+id/textUserName"
             android:layout_width="112dp"
             android:layout_height="match_parent"
             android:background="#ABC5C8"
-            android:gravity="center_vertical"
             android:text="anonymous"
-            android:textAlignment="textStart"
             android:textSize="18sp" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
-        android:layout_width="413dp"
-        android:layout_height="600dp"
+        android:layout_width="408dp"
+        android:layout_height="539dp"
         android:layout_marginStart="4dp"
         android:orientation="vertical"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
@@ -61,9 +89,9 @@
         app:layout_constraintTop_toBottomOf="@+id/linearLayout2"
         tools:listitem="@layout/items_recycler" />
 
-
     <LinearLayout
-        android:layout_width="408dp"
+        android:id="@+id/linearLayout3"
+        android:layout_width="match_parent"
         android:layout_height="48dp"
         android:layout_marginBottom="16dp"
         android:orientation="horizontal"
@@ -99,14 +127,15 @@
             android:text="보내기" />
 
         <!--        <androidx.appcompat.widget.AppCompatButton-->
-<!--            android:id="@+id/buttonUploadImage"-->
-<!--            android:layout_width="68dp"-->
-<!--            android:layout_height="match_parent"-->
-<!--            android:layout_marginRight="10dp"-->
-<!--            android:background="@drawable/button_rectangle"-->
-<!--            android:text="그림U"-->
-<!--            android:textSize="12sp" />-->
+        <!--            android:id="@+id/buttonUploadImage"-->
+        <!--            android:layout_width="68dp"-->
+        <!--            android:layout_height="match_parent"-->
+        <!--            android:layout_marginRight="10dp"-->
+        <!--            android:background="@drawable/button_rectangle"-->
+        <!--            android:text="그림U"-->
+        <!--            android:textSize="12sp" />-->
 
     </LinearLayout>
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

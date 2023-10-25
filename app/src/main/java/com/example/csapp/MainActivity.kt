@@ -127,7 +127,8 @@ class MainActivity : AppCompatActivity() {
         super.onResume()
         // 여기서 부르면 null 이 됨,  따라서 밑의 사항은 안 됨
         val txtUserName : TextView? = findViewById<TextView>(R.id.textUserName)
-        val btnLogin  = findViewById<Button>(R.id.buttonLogin)
+        //val btnLogin  = findViewById<Button>(R.id.buttonLogin)
+        //대신 로그인 메뉴 비활성화 필요
         if(txtUserName == null) Log.i("onResume@MainActivity", "txtUserName : null")
         txtUserName?.text = viewModel.displayName.value
         //binding이 없어 사망한다
@@ -159,7 +160,8 @@ class MainActivity : AppCompatActivity() {
             if(username != null && !username.equals("anonymous")){
                 Log.i("displayName.observe  username>>", username)
                 bndMain.textUserName.text  = username
-                bndMain.buttonLogin.isEnabled = false
+                //bndMain.buttonLogin.isEnabled = false
+                //메뉴 비활성화 필요
                 // username(tel)이 있으면 상담 내역을 불러와서  setting 한다
                 GlobalScope.launch {
                     val ret : String = getCounselListFromServer()
@@ -168,7 +170,8 @@ class MainActivity : AppCompatActivity() {
             } else {
                 Log.i("displayName.observe  username >>", "null")
                 bndMain.textUserName.text  = "anonymous"
-                bndMain.buttonLogin.isEnabled = true
+                //bndMain.buttonLogin.isEnabled = true
+                //대신 메뉴 활성화 필요
             }
         }
 
@@ -252,6 +255,8 @@ class MainActivity : AppCompatActivity() {
         val bndMain = ActivityMainBinding.inflate(layoutInflater)
         setContentView(bndMain.root)
 
+        setSupportActionBar(bndMain.toolbar)
+
         checkPermission()
         initializeViewModel(bndMain)
 
@@ -269,17 +274,17 @@ class MainActivity : AppCompatActivity() {
 //            val intent = Intent(this, DrawImageActivity::class.java)
 //            startActivity(intent)
 //        }
-        /***** Login button ******/
-        bndMain.buttonLogin.setOnClickListener(View.OnClickListener {
-            val intent = Intent(this, LoginActivity::class.java)
-            getResult.launch(intent)
-        })
+        /***** Login button  ==> 메뉴로 대치 ******/
+//        bndMain.buttonLogin.setOnClickListener(View.OnClickListener {
+//            val intent = Intent(this, LoginActivity::class.java)
+//            getResult.launch(intent)
+//        })
 
-        /***** menu 로 이동 ******/
-        bndMain.btnRegister.setOnClickListener(View.OnClickListener {
-            val intent = Intent(this, CreateMemberActivity::class.java)
-            startActivity(intent)
-        })
+//        /***** menu 로 이동 ******/
+//        bndMain.btnRegister.setOnClickListener(View.OnClickListener {
+//            val intent = Intent(this, CreateMemberActivity::class.java)
+//            startActivity(intent)
+//        })
 
         bndMain.editMessage.setOnEditorActionListener { _, actionId, event ->
             Log.i("onCreate>>", "Enter key in editMesssage")
