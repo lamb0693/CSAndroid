@@ -158,7 +158,7 @@ class DrawImageView(context : Context) : View(context) {
             try {
                 val fileOutputStream = context.openFileOutput(strFileName, Context.MODE_PRIVATE)
                 val outputStreamWriter = OutputStreamWriter(fileOutputStream)
-                    outputStreamWriter.use {
+                outputStreamWriter.use {
                         it.write(jsonOutput)
                 }
             } catch (e: IOException) {
