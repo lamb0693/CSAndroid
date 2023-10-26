@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.KeyEvent
@@ -41,6 +42,10 @@ class MainActivity : AppCompatActivity() {
     lateinit var counselListViewAdapter : CouselListViewAdapter
     // 이것은 activity 만들면서 바로 만들어지므로 사용 가능
     private lateinit var viewModel : MainViewModel
+    // mic on 상태인지 아닌지
+    private var micOn = false
+    // micOn button
+    private lateinit var btnMicOn : Button
 
     /*
      * permissionLauncjer
@@ -269,22 +274,26 @@ class MainActivity : AppCompatActivity() {
             Log.i("onCreate@Main>>", "lauch Result $ret")
         }
 
-        /* button 설정 */
-//        bndMain.buttonUploadImage.setOnClickListener{
-//            val intent = Intent(this, DrawImageActivity::class.java)
-//            startActivity(intent)
-//        }
-        /***** Login button  ==> 메뉴로 대치 ******/
-//        bndMain.buttonLogin.setOnClickListener(View.OnClickListener {
-//            val intent = Intent(this, LoginActivity::class.java)
-//            getResult.launch(intent)
-//        })
+        // 다른 method 에서 사용을 위해 전역변수에 저장
+        btnMicOn = bndMain.buttonMicOn
+        // micOn or Off 시 기능
+        bndMain.buttonMicOn.setOnClickListener{
+            btnMicOn.isEnabled = false
+            micOn = !micOn
+            val socketManager = SocketManager.getInstance()
+            if(micOn){
+                btnMicOn.setBackgroundColor(Color.RED)
+                socketManager.connect()
+                // 여기에 AudioStreamer를 켠다
 
-//        /***** menu 로 이동 ******/
-//        bndMain.btnRegister.setOnClickListener(View.OnClickListener {
-//            val intent = Intent(this, CreateMemberActivity::class.java)
-//            startActivity(intent)
-//        })
+                // ***************
+            } else {
+                btnMicOn.setBackgroundColor(Color.GRAY)
+                // 여기에 audio strema을 file로 저장한다
+                socketManager.disconnect()
+            }
+            btnMicOn.isEnabled = true
+        }
 
         bndMain.editMessage.setOnEditorActionListener { _, actionId, event ->
             Log.i("onCreate>>", "Enter key in editMesssage")
