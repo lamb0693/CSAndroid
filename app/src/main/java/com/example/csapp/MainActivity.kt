@@ -34,6 +34,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import retrofit2.Retrofit
 import retrofit2.converter.scalars.ScalarsConverterFactory
+import java.io.File
 
 
 class MainActivity : AppCompatActivity() {
@@ -46,6 +47,9 @@ class MainActivity : AppCompatActivity() {
     private var micOn = false
     // micOn button
     private lateinit var btnMicOn : Button
+
+    private lateinit var audioStreamer : AudioNetStreamer
+    private lateinit var audioThread : Thread
 
     /*
      * permissionLauncjer
@@ -91,19 +95,35 @@ class MainActivity : AppCompatActivity() {
      *퍼미션을 체크하고 없으면 요청한다
      */
     fun checkPermission(){
-        // permission을 확인하고, 없으면 요청한다
-        val status = ContextCompat.checkSelfPermission(this,
+        val statusNoti = ContextCompat.checkSelfPermission(this,
             "android.permission.POST_NOTIFICATIONS")
-        if (status == PackageManager.PERMISSION_GRANTED) {
-            Log.d(">>", "Permission Granted")
-        } else {
+        val statusAudio = ContextCompat.checkSelfPermission(this,
+            "android.permission.RECORD_AUDIO")
+
+        if (statusNoti == PackageManager.PERMISSION_DENIED ||
+                statusAudio == PackageManager.PERMISSION_DENIED) {
             Log.d(">>", "Permission Denied")
             permissionLauncher.launch(
                 arrayOf(
-                    "android.permission.POST_NOTIFICATIONS"
+                    "android.permission.POST_NOTIFICATIONS",
+                    "android.permission.RECORD_AUDIO"
                 )
             )
         }
+
+        // permission을 확인하고, 없으면 요청한다 1개 짜리 , 위에 두개 위해서 ㄱ침
+//        val status = ContextCompat.checkSelfPermission(this,
+//            "android.permission.POST_NOTIFICATIONS")
+//        if (status == PackageManager.PERMISSION_GRANTED) {
+//            Log.d(">>", "Permission Granted")
+//        } else {
+//            Log.d(">>", "Permission Denied")
+//            permissionLauncher.launch(
+//                arrayOf(
+//                    "android.permission.POST_NOTIFICATIONS"
+//                )
+//            )
+//        }
         //End of request for permission
     }
 
@@ -262,6 +282,8 @@ class MainActivity : AppCompatActivity() {
 
         setSupportActionBar(bndMain.toolbar)
 
+        audioStreamer = AudioNetStreamer(applicationContext)
+
         checkPermission()
         initializeViewModel(bndMain)
 
@@ -283,14 +305,25 @@ class MainActivity : AppCompatActivity() {
             val socketManager = SocketManager.getInstance()
             if(micOn){
                 btnMicOn.setBackgroundColor(Color.RED)
-                socketManager.connect()
                 // 여기에 AudioStreamer를 켠다
+                audioThread = Thread(audioStreamer)
+                audioThread.start()
 
                 // ***************
             } else {
                 btnMicOn.setBackgroundColor(Color.GRAY)
                 // 여기에 audio strema을 file로 저장한다
-                socketManager.disconnect()
+                audioStreamer.stopStreaming()
+                // file 생성 임시 확인
+                val filesDir: File = applicationContext.filesDir
+                val files: Array<out File>? = filesDir.listFiles()
+
+                if (files != null) {
+                    for (file in files) {
+                        // Process each file as needed
+                        Log.d("FileList", file.name)
+                    }
+                }
             }
             btnMicOn.isEnabled = true
         }
@@ -370,7 +403,6 @@ class MainActivity : AppCompatActivity() {
         }
 
     }
-
 
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {
