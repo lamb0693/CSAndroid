@@ -32,6 +32,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.Retrofit
 import retrofit2.converter.scalars.ScalarsConverterFactory
 import java.io.File
@@ -268,6 +271,49 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    suspend fun uploadAudio(strFileName : String) : String {
+        Log.i("uploadImage@DrawImageActivity", "uploadAudio executed")
+        try {
+            val strToken : String? = GlobalVariable.getInstance()?.getAccessToken()
+            if(strToken == null) return ("accesstoken null")
+            var username : String? = GlobalVariable.getInstance()?.getUserName()
+            if(username == null) return ("username null")
+
+            var filePart: MultipartBody.Part? = null
+            if (strFileName != null) {
+                val fileDir = this.applicationContext.filesDir
+                val upFile = File(fileDir, strFileName)
+                val requestBodyFile =
+                    RequestBody.create(MediaType.parse("multipart/form-data"), upFile)
+                filePart = MultipartBody.Part.createFormData("file", upFile.name, requestBodyFile)
+            }
+
+            // return이 plain text라 scalar인 service를 사용한다
+            val response = withContext(Dispatchers.IO) {
+                RetrofitScalarObject.getApiService().createBoard("Bearer:"+strToken,
+                    username, "AUDIO", "음성 파일 입니다", filePart).execute()
+            }
+
+            // response 를 처리 성공하면 counselList를 새로 불러 온다
+            if(response.isSuccessful){
+                val result = response.body() as String
+                Log.i("uploadChatMessage >>>>", "$result")
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@MainActivity.applicationContext,"upload에 성공하였습니다", Toast.LENGTH_SHORT)
+                }
+                return "success"
+            }else {
+                Log.i("login >>", "bad request ${response.code()}")
+                Toast.makeText(this@MainActivity.applicationContext,"upload실패 ${response.code()}", Toast.LENGTH_SHORT)
+                return "error bad request ${response.code()}"
+            }
+        } catch (e: Throwable) {
+            return e.message!!
+            Toast.makeText(this@MainActivity.applicationContext,"upload실패 ${e.message}", Toast.LENGTH_SHORT)
+
+        }
+    }
+
     fun launchCustomDialog(){
 
     }
@@ -314,6 +360,11 @@ class MainActivity : AppCompatActivity() {
                 btnMicOn.setBackgroundColor(Color.GRAY)
                 // 여기에 audio strema을 file로 저장한다
                 audioStreamer.stopStreaming()
+                GlobalScope.launch {
+                    val ret : String = uploadAudio("audio_sample.wav")
+                    Log.i("buttonSendMessage@Main>>", "lauch Result $ret")
+                }
+
                 // file 생성 임시 확인
                 val filesDir: File = applicationContext.filesDir
                 val files: Array<out File>? = filesDir.listFiles()
