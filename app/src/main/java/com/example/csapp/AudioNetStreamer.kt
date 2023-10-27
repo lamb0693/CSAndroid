@@ -7,11 +7,15 @@ import android.media.AudioRecord
 import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.util.Log
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
 
 class AudioNetStreamer(private val context: Context) : Runnable {
+    private var threadStoppedListener: AudioThreadStoppedListener? = null
+
     private var bStreaming = true
     private var audioRecord: AudioRecord? = null
     private val audioBufferSize = AudioRecord.getMinBufferSize(
@@ -19,6 +23,10 @@ class AudioNetStreamer(private val context: Context) : Runnable {
         AudioFormat.CHANNEL_IN_MONO,
         AudioFormat.ENCODING_PCM_16BIT
     )
+
+    fun setThreadStoppedListener(listener: AudioThreadStoppedListener) {
+        this.threadStoppedListener = listener
+    }
 
     private val mediaPlayer = MediaPlayer()
 
@@ -51,8 +59,9 @@ class AudioNetStreamer(private val context: Context) : Runnable {
                 // 서버로 보내기
 
                 // file로 저장
-
-                audioOutputStream.write(audioData, 0, bytesRead)
+                GlobalScope.launch {
+                    writeAudioDataToFile(audioData, audioOutputStream)
+                }
             }
         }
 
@@ -63,8 +72,16 @@ class AudioNetStreamer(private val context: Context) : Runnable {
         audioRecord?.stop()
         audioRecord?.release()
         audioRecord = null
+
+        threadStoppedListener?.onAudioThreadStopped()
+
         Log.i(">>> audionetprocess", "stopped")
 
+    }
+
+    suspend fun writeAudioDataToFile(audioData: ByteArray, audioOutputStream: FileOutputStream) {
+        audioOutputStream.write(audioData)
+        audioOutputStream.flush()
     }
 
     fun addWavHeader(inputFile: File, outputFile: File) {

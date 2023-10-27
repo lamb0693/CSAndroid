@@ -35,8 +35,6 @@ import kotlinx.coroutines.withContext
 import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
-import retrofit2.Retrofit
-import retrofit2.converter.scalars.ScalarsConverterFactory
 import java.io.File
 
 
@@ -329,6 +327,15 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(bndMain.toolbar)
 
         audioStreamer = AudioNetStreamer(applicationContext)
+        audioStreamer.setThreadStoppedListener(object : AudioThreadStoppedListener{
+            override fun onAudioThreadStopped() {
+                GlobalScope.launch {
+                    val ret : String = uploadAudio("audio_sample.wav")
+                    Log.i("buttonSendMessage@Main>>", "lauch Result $ret")
+                }
+            }
+
+        })
 
         checkPermission()
         initializeViewModel(bndMain)
@@ -360,10 +367,8 @@ class MainActivity : AppCompatActivity() {
                 btnMicOn.setBackgroundColor(Color.GRAY)
                 // 여기에 audio strema을 file로 저장한다
                 audioStreamer.stopStreaming()
-                GlobalScope.launch {
-                    val ret : String = uploadAudio("audio_sample.wav")
-                    Log.i("buttonSendMessage@Main>>", "lauch Result $ret")
-                }
+
+                // upload는 listner를 만들고 옮겼음
 
                 // file 생성 임시 확인
                 val filesDir: File = applicationContext.filesDir
