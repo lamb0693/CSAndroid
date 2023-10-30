@@ -83,9 +83,9 @@ class MainActivity : AppCompatActivity() {
             if(refreshToken!=null) viewModel.setRefreshToken(refreshToken)
 
             // 없어질 경우를 대비해 globalVariable에 저장
-            GlobalVariable.getInstance()?.setAccessToken(accessToken)
-            GlobalVariable.getInstance()?.setUserName(displayName)
-            GlobalVariable.getInstance()?.setRefreshToken(refreshToken)
+            GlobalVariable.setAccessToken(accessToken)
+            GlobalVariable.setUserName(displayName)
+            GlobalVariable.setRefreshToken(refreshToken)
 
 //          이 result는 binding 되기 전에 시행이라 이렇게 하면 안됨
 //            bndMain.textUserName.setText(displayName)
@@ -100,14 +100,18 @@ class MainActivity : AppCompatActivity() {
             "android.permission.POST_NOTIFICATIONS")
         val statusAudio = ContextCompat.checkSelfPermission(this,
             "android.permission.RECORD_AUDIO")
+        val statusStorage = ContextCompat.checkSelfPermission(this,
+            "android.permission.WRITE_EXTERNAL_STORAGE")
 
         if (statusNoti == PackageManager.PERMISSION_DENIED ||
-                statusAudio == PackageManager.PERMISSION_DENIED) {
-            Log.d(">>", "Permission Denied")
+                statusAudio == PackageManager.PERMISSION_DENIED ||
+                    statusStorage == PackageManager.PERMISSION_DENIED) {
+            Log.d(">>", "One or more Permission Denied Starting permission Launcher")
             permissionLauncher.launch(
                 arrayOf(
                     "android.permission.POST_NOTIFICATIONS",
-                    "android.permission.RECORD_AUDIO"
+                    "android.permission.RECORD_AUDIO",
+                    "android.permission.WRITE_EXTERNAL_STORAGE"
                 )
             )
         }
@@ -144,6 +148,11 @@ class MainActivity : AppCompatActivity() {
                 //val clickedItem = yourCounselListData[position]
                 Log.i("counselListViewAdapter setOnItemClickListener>> position : ", "${position}")
                 // Perform the desired action when an item is clicked
+                GlobalScope.launch {
+                    viewModel.counselList.value?.let {
+                        downloadFile(it[position].board_id)
+                    }
+                }
                 launchCustomDialog()
             }
         })
@@ -167,6 +176,21 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    suspend fun downloadFile(boardId : Long) : String{
+        Log.i("downloadFilee@Main", "downloadFile executed")
+        try {
+            val strToken: String? = GlobalVariable.getAccessToken()
+            if (strToken == null) return ("accesstoken null")
+            var username: String? = GlobalVariable.getUserName()
+            if (username == null) return ("username null")
+
+            val downloader: Downloader = Downloader()
+            return downloader.downloadFile(boardId, applicationContext)
+        } catch(e : Exception) {
+            return e.message.toString()
+        }
+    }
+
     /*
      *MainViewModel을 초기화 하고   observer를 설정
     */
@@ -182,7 +206,7 @@ class MainActivity : AppCompatActivity() {
         // viewmodel이 바뀌면(즉 mainActivity가 사망했다 다시 created) textUserName을 ##GlobalVariable##을 불러 세팅한다
         viewModel.displayName.observe(this) {
             Log.i("onCreate@Main", "displayNameChanged ${viewModel.displayName.value}")
-            var username : String? = GlobalVariable.getInstance()?.getUserName()
+            var username : String? = GlobalVariable.getUserName()
             if(username != null && !username.equals("anonymous")){
                 Log.i("displayName.observe  username>>", username)
                 bndMain.textUserName.text  = username
@@ -238,9 +262,9 @@ class MainActivity : AppCompatActivity() {
     suspend fun uploadChatMessage(binding: ActivityMainBinding) : String {
         Log.i("uploadChatMessage@Main", "uploadChatMessage executed")
         try {
-            val strToken : String? = GlobalVariable.getInstance()?.getAccessToken()
+            val strToken : String? = GlobalVariable.getAccessToken()
             if(strToken == null) return ("accesstoken null")
-            var username : String? = GlobalVariable.getInstance()?.getUserName()
+            var username : String? = GlobalVariable.getUserName()
             if(username == null) return ("username null")
             if(binding.editMessage.text.toString().equals("")) return ("no message")
 
@@ -272,9 +296,9 @@ class MainActivity : AppCompatActivity() {
     suspend fun uploadAudio(strFileName : String) : String {
         Log.i("uploadImage@DrawImageActivity", "uploadAudio executed")
         try {
-            val strToken : String? = GlobalVariable.getInstance()?.getAccessToken()
+            val strToken : String? = GlobalVariable.getAccessToken()
             if(strToken == null) return ("accesstoken null")
-            var username : String? = GlobalVariable.getInstance()?.getUserName()
+            var username : String? = GlobalVariable.getUserName()
             if(username == null) return ("username null")
 
             var filePart: MultipartBody.Part? = null
@@ -430,9 +454,9 @@ class MainActivity : AppCompatActivity() {
     private suspend fun getCounselListFromServer() : String {
         Log.i("getCounselListFromServer@Main", "getCounselListFromServer executed")
         try {
-            val strToken : String? = GlobalVariable.getInstance()?.getAccessToken()
+            val strToken : String? = GlobalVariable.getAccessToken()
             if(strToken == null) return ("accesstoken null")
-            var username : String? = GlobalVariable.getInstance()?.getUserName()
+            var username : String? = GlobalVariable.getUserName()
             if(username == null) return ("username null")
             //  suspend Networdk function은 안에서 main thread가 아닌 thread로 실행
             val response = withContext(Dispatchers.IO) {

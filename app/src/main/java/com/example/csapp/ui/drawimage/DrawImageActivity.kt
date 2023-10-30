@@ -30,9 +30,9 @@ class DrawImageActivity : AppCompatActivity() {
     suspend fun uploadImage(strFileName : String) : String {
         Log.i("uploadImage@DrawImageActivity", "uploadImage executed")
         try {
-            val strToken : String? = GlobalVariable.getInstance()?.getAccessToken()
+            val strToken : String? = GlobalVariable.getAccessToken()
             if(strToken == null) return ("accesstoken null")
-            var username : String? = GlobalVariable.getInstance()?.getUserName()
+            var username : String? = GlobalVariable.getUserName()
             if(username == null) return ("username null")
 
             var filePart: MultipartBody.Part? = null

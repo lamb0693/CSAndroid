@@ -2,6 +2,7 @@ package com.example.csapp
 
 import okhttp3.Call
 import okhttp3.MultipartBody
+import okhttp3.ResponseBody
 import retrofit2.http.Body
 import retrofit2.http.Field
 import retrofit2.http.FormUrlEncoded
@@ -36,4 +37,11 @@ interface RetrofitService {
         @Part("message") message: String,
         @Part file: MultipartBody.Part?
     ): retrofit2.Call<String>
+
+    @FormUrlEncoded
+    @POST("/api/board/download")
+    fun download(
+        @Header("Authorization") authToken: String,
+        @Field("id") id: Long
+    ): retrofit2.Call<ResponseBody>
 }
