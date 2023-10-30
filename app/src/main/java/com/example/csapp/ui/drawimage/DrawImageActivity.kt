@@ -81,6 +81,8 @@ class DrawImageActivity : AppCompatActivity() {
         val bnImageView = ActivityDrawImageBinding.inflate(layoutInflater)
         setContentView(bnImageView.root)
 
+        setSupportActionBar(bnImageView.toolbar2)
+
         myView  = DrawImageView(this)
 
         val layoutDrawImage = findViewById<FrameLayout>(R.id.frameLayoutView)
