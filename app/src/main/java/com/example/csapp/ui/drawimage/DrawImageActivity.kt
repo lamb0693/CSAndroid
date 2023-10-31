@@ -1,5 +1,6 @@
 package com.example.csapp.ui.drawimage
 
+import android.graphics.Point
 import android.graphics.PointF
 import android.os.Bundle
 import android.util.Log
@@ -8,10 +9,11 @@ import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import com.example.csapp.GlobalVariable
-import com.example.csapp.PointSerializable
 import com.example.csapp.R
 import com.example.csapp.RetrofitScalarObject
 import com.example.csapp.databinding.ActivityDrawImageBinding
+import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -19,9 +21,10 @@ import kotlinx.coroutines.withContext
 import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
+import java.io.BufferedReader
 import java.io.File
-import java.io.FileInputStream
-import java.io.ObjectInputStream
+import java.io.FileReader
+import java.io.IOException
 
 
 class DrawImageActivity : AppCompatActivity() {
@@ -70,9 +73,6 @@ class DrawImageActivity : AppCompatActivity() {
         }
     }
 
-    fun readImageFromFile(strFileName: String){
-
-    }
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -87,6 +87,13 @@ class DrawImageActivity : AppCompatActivity() {
 
         val layoutDrawImage = findViewById<FrameLayout>(R.id.frameLayoutView)
         layoutDrawImage.addView(myView)
+
+        // if file이 있으면 불러온다
+        val strFileName : String? = intent.getStringExtra("paint_file_path")
+        if(strFileName != null ){
+            Log.i("getExtra", strFileName)
+            myView.readImageFromFile(strFileName)
+        }
 
         bnImageView.buttonClear.setOnClickListener(View.OnClickListener {
             myView.clearAll()
@@ -103,16 +110,6 @@ class DrawImageActivity : AppCompatActivity() {
         bnImageView.buttonUpload.setOnClickListener{
             //   현재의 lineList를 저장하고 file이름을 return으로 받음
             val strSavedFilename : String = myView.saveCurrentImage()
-            //Log.i("strSavedFilename>>>", strSavedFilename)
-
-
-//            val fileDirectory = this.applicationContext.filesDir // Get the directory where your files are stored
-//              읽기 시험
-//            val fileList = fileDirectory.listFiles()
-//            for(file : File in fileList) {
-//                Log.i("fileList", file.name)
-//            }
-
 
 
             // file upload

@@ -4,11 +4,14 @@ package com.example.csapp
 import android.app.Application
 import android.content.ContentValues
 import android.content.Context
+import android.content.Intent
+import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.media.MediaPlayer
 import android.os.Environment
 import android.os.FileUtils
 import android.provider.MediaStore
 import android.util.Log
+import com.example.csapp.ui.drawimage.DrawImageActivity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
@@ -24,7 +27,7 @@ import java.io.OutputStream
 
 class Downloader {
     lateinit var context : Context
-    suspend fun downloadFile(board_id : Long, context:Context) : String {
+    suspend fun downloadFile(board_id : Long, content : String, context:Context) : String {
         this.context = context
 
         val strAuthHeader = "Bearer " + GlobalVariable.getAccessToken()
@@ -40,7 +43,11 @@ class Downloader {
                 Log.i("download response", response.toString())
                 val responseBody: ResponseBody? = response?.body()
 
-                responseBody?.let{saveFileToMediaAndPlay(it) }
+                if(content.equals("AUDIO")){
+                    responseBody?.let{saveAudioFileToMediaAndPlay(it) }
+                } else if (content.equals("PAINT")){
+                    responseBody?.let{savePaintFileAndStartActivity(it)}
+                }
 
                 return "Success"
 
@@ -54,7 +61,7 @@ class Downloader {
         }
     }
 
-    private fun saveFileToMediaAndPlay(responseBody: ResponseBody): Boolean {
+    private fun saveAudioFileToMediaAndPlay(responseBody: ResponseBody): Boolean {
         return try {
             //val file = File(context.filesDir, "downloadedFile.wav")
             //val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC), "downloaded_audio.mp3")
@@ -90,6 +97,37 @@ class Downloader {
             true
         } catch (e: Exception) {
             Log.i("saveFileToInternalStorage", e.message.toString())
+            false
+        }
+    }
+
+    private fun savePaintFileAndStartActivity(responseBody: ResponseBody): Boolean {
+        return try {
+
+            val file = File(context.filesDir, "downloaded_paint.json")
+
+            val inputStream = responseBody.byteStream()
+            val outputStream = FileOutputStream(file)
+
+            val buffer = ByteArray(4096)
+            var bytesRead: Int
+            while (inputStream.read(buffer).also { bytesRead = it } != -1) {
+                outputStream.write(buffer, 0, bytesRead)
+            }
+
+            outputStream.flush()
+            outputStream.close()
+            inputStream.close()
+
+            //  파일이름을 가지고 Intent를 시행
+            val paintIntent = Intent(context,  DrawImageActivity::class.java )
+            paintIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            paintIntent.putExtra("paint_file_path", file.absolutePath)
+            context.startActivity(paintIntent)
+
+            true
+        } catch (e: Exception) {
+            Log.i("savePaintFileAndStartActivity", e.message.toString())
             false
         }
     }

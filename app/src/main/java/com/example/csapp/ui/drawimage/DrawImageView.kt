@@ -15,9 +15,12 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import com.example.csapp.PointSerializable
 import com.google.gson.Gson
+import com.google.gson.reflect.TypeToken
+import java.io.BufferedReader
 import java.io.File
 import java.io.FileInputStream
 import java.io.FileOutputStream
+import java.io.FileReader
 import java.io.FileWriter
 import java.io.IOException
 import java.io.ObjectInputStream
@@ -42,10 +45,6 @@ class DrawImageView(context : Context) : View(context) {
         viewModel = ViewModelProvider(currentActivity)[DrawImageViewModel::class.java]
 
         val lifecycleOwner = context as LifecycleOwner
-//        viewModel.currentValue.observe(lifecycleOwner, Observer {
-//            //binding.numberTextview.text = it.toString()
-//            Log.i(TAG, "value changed")
-//        })
 
         viewModel.pointList.observe(lifecycleOwner, Observer {
             Log.i(TAG, "pointList changed")
@@ -177,6 +176,40 @@ class DrawImageView(context : Context) : View(context) {
         return strFileName
     }
 
+    fun readImageFromFile(strFileName: String){
+
+        var lineListF: ArrayList<ArrayList<PointF>> = ArrayList()
+        var savedLineList = mutableListOf<Array<PointF>>()
+
+        try {
+            val gson = Gson()
+            BufferedReader(FileReader(strFileName)).use { reader ->
+                lineListF = gson.fromJson<ArrayList<ArrayList<PointF>>>(
+                    reader,
+                    object :
+                        TypeToken<ArrayList<ArrayList<PointF>>>() {}.type
+                )
+            }
+            //data 확인  및 conversion
+            for (lineF : ArrayList<PointF> in lineListF) {
+                var newLine = mutableListOf<PointF>()
+                for (pointF : PointF in lineF) {
+                    //Log.i("point", "x: " + pointF.x + ", y: " + pointF.y);
+                    newLine.add(PointF(pointF.x, pointF.y))
+                }
+                savedLineList.add(newLine.toTypedArray())
+            }
+
+            viewModel.setLineList(savedLineList.toTypedArray())
+
+
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+
+}
+
 //      Json을 이용해 저장하는 방법으로 대치 예정
 //    fun saveCurrentImage() : String {
 //        lateinit var strFileName : String
@@ -229,39 +262,37 @@ class DrawImageView(context : Context) : View(context) {
 //        return strFileName
 //    }
 
-    // file을 읽어서 viewModel에 upload
-    fun readImageFromFile(strFileName : String){
-        val fileDirectory = contextParent.filesDir // Get the directory where your files are stored
+    // pointserializaable을 이용해 file을 읽어서 viewModel에 upload
+//    fun readImageFromFile(strFileName : String){
+//        val fileDirectory = contextParent.filesDir // Get the directory where your files are stored
+//
+//        // file 열어서 Array<Array<PointF>> 형식으로 저장
+//        try {
+//            // Open the file for reading
+//            val fis = FileInputStream(File(fileDirectory, strFileName))
+//            val ois = ObjectInputStream(fis)
+//
+//            // Load the data as ArrayList<ArrayList<PointSerializable>>
+//            val loadedData = ois.readObject() as ArrayList<ArrayList<PointSerializable>>
+//
+//            // Initialize an empty Array<Array<PointF>>
+//            val data: Array<Array<PointF>> = Array(loadedData.size) { Array(0) { PointF(0f, 0f) } }
+//
+//            // Convert the data into the desired structure
+//            for (i in loadedData.indices) {
+//                val row = loadedData[i]
+//                data[i] = Array(row.size) {
+//                    PointF(row[it].x.toFloat(), row[it].y.toFloat())
+//                }
+//            }
+//            Log.i("read file ... ", "${data}")
+//            // Now 'data' contains the converted data as an Array<Array<PointF>>
+//            ois.close()
+//
+//            viewModel.setLineList(data)
+//
+//        } catch (e: Exception) {
+//            Log.e("read file ... ", "${e.message}")
+//        }
+//    }
 
-        // file 열어서 Array<Array<PointF>> 형식으로 저장
-        try {
-            // Open the file for reading
-            val fis = FileInputStream(File(fileDirectory, strFileName))
-            val ois = ObjectInputStream(fis)
-
-            // Load the data as ArrayList<ArrayList<PointSerializable>>
-            val loadedData = ois.readObject() as ArrayList<ArrayList<PointSerializable>>
-
-            // Initialize an empty Array<Array<PointF>>
-            val data: Array<Array<PointF>> = Array(loadedData.size) { Array(0) { PointF(0f, 0f) } }
-
-            // Convert the data into the desired structure
-            for (i in loadedData.indices) {
-                val row = loadedData[i]
-                data[i] = Array(row.size) {
-                    PointF(row[it].x.toFloat(), row[it].y.toFloat())
-                }
-            }
-            Log.i("read file ... ", "${data}")
-            // Now 'data' contains the converted data as an Array<Array<PointF>>
-            ois.close()
-
-            viewModel.setLineList(data)
-
-        } catch (e: Exception) {
-            Log.e("read file ... ", "${e.message}")
-        }
-    }
-
-
-}

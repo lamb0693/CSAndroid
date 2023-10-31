@@ -49,6 +49,9 @@ class MainActivity : AppCompatActivity() {
     // micOn button
     private lateinit var btnMicOn : Button
 
+    // 상담원 connect 버튼 //0 : off, 1 :  대기, 2 : connected
+    private lateinit var btnConnectCSR : Button
+
     private lateinit var audioStreamer : AudioNetStreamer
     private lateinit var audioThread : Thread
 
@@ -116,20 +119,6 @@ class MainActivity : AppCompatActivity() {
             )
         }
 
-        // permission을 확인하고, 없으면 요청한다 1개 짜리 , 위에 두개 위해서 ㄱ침
-//        val status = ContextCompat.checkSelfPermission(this,
-//            "android.permission.POST_NOTIFICATIONS")
-//        if (status == PackageManager.PERMISSION_GRANTED) {
-//            Log.d(">>", "Permission Granted")
-//        } else {
-//            Log.d(">>", "Permission Denied")
-//            permissionLauncher.launch(
-//                arrayOf(
-//                    "android.permission.POST_NOTIFICATIONS"
-//                )
-//            )
-//        }
-        //End of request for permission
     }
 
     /*
@@ -144,16 +133,16 @@ class MainActivity : AppCompatActivity() {
         // adapter에 내가 만든 listener를 설정한다.
         counselListViewAdapter.setOnItemClickListener(object : CouselListViewAdapter.OnItemClickListener {
             override fun onItemClick(position: Int) {
-                // Handle the item click here
-                //val clickedItem = yourCounselListData[position]
                 Log.i("counselListViewAdapter setOnItemClickListener>> position : ", "${position}")
-                // Perform the desired action when an item is clicked
-                GlobalScope.launch {
-                    viewModel.counselList.value?.let {
-                        downloadFile(it[position].board_id)
+
+                viewModel.counselList.value?.let {
+                    val item = it.getOrNull(position)
+                    Log.i("onItemClick", item?.content.toString())
+
+                    if(item?.content != "TEXT") GlobalScope.launch {
+                        downloadFile(it.get(position).board_id, it.get(position).content)
                     }
                 }
-                launchCustomDialog()
             }
         })
     }
@@ -176,7 +165,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    suspend fun downloadFile(boardId : Long) : String{
+    suspend fun downloadFile(boardId : Long, content : String) : String{
         Log.i("downloadFilee@Main", "downloadFile executed")
         try {
             val strToken: String? = GlobalVariable.getAccessToken()
@@ -185,7 +174,7 @@ class MainActivity : AppCompatActivity() {
             if (username == null) return ("username null")
 
             val downloader: Downloader = Downloader()
-            return downloader.downloadFile(boardId, applicationContext)
+            return downloader.downloadFile(boardId, content, applicationContext)
         } catch(e : Exception) {
             return e.message.toString()
         }
@@ -229,6 +218,23 @@ class MainActivity : AppCompatActivity() {
             Log.i("onCreate@Main", "counselList in viewModel changed ${viewModel.counselList.value}")
             counselListViewAdapter.setData(newList)
             counselListViewAdapter.notifyDataSetChanged()
+        }
+
+        viewModel.getConnectStatus().observe(this){
+            when(viewModel.getConnectStatus().value){
+                0 -> {
+                    btnConnectCSR?.setBackgroundColor(Color.BLUE)
+                }
+                1 -> {
+                    btnConnectCSR?.setBackgroundColor(Color.GRAY)
+                }
+                2 -> {
+                    btnConnectCSR?.setBackgroundColor(Color.RED)
+                }
+                else -> {
+                    Log.e("connect Status" , "error")
+                }
+            }
         }
     }
 
@@ -395,18 +401,35 @@ class MainActivity : AppCompatActivity() {
                 // upload는 listner를 만들고 옮겼음
 
                 // file 생성 임시 확인
-                val filesDir: File = applicationContext.filesDir
-                val files: Array<out File>? = filesDir.listFiles()
-
-                if (files != null) {
-                    for (file in files) {
-                        // Process each file as needed
-                        Log.d("FileList", file.name)
-                    }
-                }
+//                val filesDir: File = applicationContext.filesDir
+//                val files: Array<out File>? = filesDir.listFiles()
+//
+//                if (files != null) {
+//                    for (file in files) {
+//                        // Process each file as needed
+//                        Log.d("FileList", file.name)
+//                    }
+//                }
             }
             btnMicOn.isEnabled = true
         }
+
+        // connectCSR button 설정하고 viewModel값 초기화
+        btnConnectCSR = bndMain.buttonConnectCSR
+        btnConnectCSR.setOnClickListener{
+            if(viewModel.accessToken == null) {
+                Toast.makeText(this,"not login state", Toast.LENGTH_SHORT).show()
+            } else {
+                Log.i("btnConnect", "clicked")
+                when(viewModel.getConnectStatus().value){
+                    0 ->  viewModel.setConnectStatus(1)
+                    1 ->  viewModel.setConnectStatus(0)
+                    2 ->  viewModel.setConnectStatus(0)
+                    else -> Log.e("connect Status", "value error" )
+                }
+            }
+        }
+        viewModel.setConnectStatus(0)
 
         bndMain.editMessage.setOnEditorActionListener { _, actionId, event ->
             Log.i("onCreate>>", "Enter key in editMesssage")

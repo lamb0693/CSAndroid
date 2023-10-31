@@ -10,24 +10,16 @@ class DrawImageViewModel : ViewModel() {
 
     val TAG : String = "DrawImageViewModel"
 
-    // 내부에서 설정하는 자료형은 Mutable로 변경가능하도록 설정한다.
-    //private val _currentValue = MutableLiveData<Int>()
-    // current Line
+    // 현재의 선
     private val _pointList = MutableLiveData<MutableList<PointF>>()
     // 만들어 놓은 lineList
     private val _lineList = MutableLiveData<MutableList<Array<PointF>>>()
-    // MutableLiveData - 수정 가능
-    // LiveData - 값 수정 불가능
 
-    //val currentValue: LiveData<Int> get() = _currentValue
     val pointList : LiveData<MutableList<PointF>> get() = _pointList
     val lineList : LiveData<MutableList<Array<PointF>>> get() = _lineList
 
     // 뷰모델이 생성될대 초기값 설정해준다.
     init{
-        //LiveData로 맵핑이 되어있을때 값을 수정하려면 value를 이용한다.
-        //LivaData로는 값 수정이 불가능 하지만 MutableLiveData로 초기화 했기 때문에 수정이 가능하다.
-        //_currentValue.value = 0
         _pointList.value = mutableListOf<PointF>()
         _lineList.value = mutableListOf<Array<PointF>>()
     }
@@ -69,8 +61,9 @@ class DrawImageViewModel : ViewModel() {
     }
 
     fun setLineList(lineList : Array<Array<PointF>>){
+        Log.i("setLineList", lineList.toString())
         val newLineList = mutableListOf<Array<PointF>>()
-        for(line :Array<PointF> in newLineList){
+        for(line :Array<PointF> in lineList){
             newLineList.add(line)
         }
         _lineList.value = newLineList

@@ -23,12 +23,23 @@ class MainViewModel : ViewModel() {
     val counselList : LiveData<MutableList<CouselListDTO>> get() = _counselList
 
 
+    private val _connect_status = MutableLiveData<Int>()
+    fun getConnectStatus() : LiveData<Int> {
+        return _connect_status
+    }
+
+    fun setConnectStatus(state : Int) : Unit {
+        _connect_status.value = state
+    }
+
+
     // 뷰모델이 생성될대 초기값 설정해준다.
     init{
         _accessToken.value = ""
         _refreshToken.value = ""
         _displayName.value = "anonymous"
         _counselList.value = mutableListOf<CouselListDTO>()
+        // _connect_status.value = 0 setting을 하면  초기화 과정에서 죽음
     }
 
     fun setAccessToken(accessToken : String ) : Unit {
