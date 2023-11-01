@@ -28,6 +28,7 @@ import com.example.csapp.ui.drawimage.DrawImageActivity
 import com.example.csapp.ui.login.LoginActivity
 import com.example.csapp.ui.main.MainViewModel
 import com.example.csapp.ui.register.CreateMemberActivity
+import io.socket.emitter.Emitter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -54,6 +55,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var audioStreamer : AudioNetStreamer
     private lateinit var audioThread : Thread
+
+    private lateinit var socketManager: SocketManager
 
     /*
      * permissionLauncjer
@@ -356,6 +359,8 @@ class MainActivity : AppCompatActivity() {
 
         setSupportActionBar(bndMain.toolbar)
 
+        socketManager = SocketManager.getInstance()
+
         audioStreamer = AudioNetStreamer(applicationContext)
         audioStreamer.setThreadStoppedListener(object : AudioThreadStoppedListener{
             override fun onAudioThreadStopped() {
@@ -385,7 +390,6 @@ class MainActivity : AppCompatActivity() {
         bndMain.buttonMicOn.setOnClickListener{
             btnMicOn.isEnabled = false
             micOn = !micOn
-            val socketManager = SocketManager.getInstance()
             if(micOn){
                 btnMicOn.setBackgroundColor(Color.RED)
                 // 여기에 AudioStreamer를 켠다
@@ -417,14 +421,24 @@ class MainActivity : AppCompatActivity() {
         // connectCSR button 설정하고 viewModel값 초기화
         btnConnectCSR = bndMain.buttonConnectCSR
         btnConnectCSR.setOnClickListener{
-            if(viewModel.accessToken == null) {
+            if(GlobalVariable.getUserName() == null || GlobalVariable.getUserName().equals("")) {
                 Toast.makeText(this,"not login state", Toast.LENGTH_SHORT).show()
             } else {
                 Log.i("btnConnect", "clicked")
                 when(viewModel.getConnectStatus().value){
-                    0 ->  viewModel.setConnectStatus(1)
-                    1 ->  viewModel.setConnectStatus(0)
-                    2 ->  viewModel.setConnectStatus(0)
+                    0 -> {
+                        viewModel.setConnectStatus(1)
+                        socketManager.connect()
+                        socketManager.sendCreateRoomMessage(GlobalVariable.getUserName().toString())
+                    }
+                    1 ->  {
+                        viewModel.setConnectStatus(0)
+                        socketManager.disconnect()
+                    }
+                    2 ->  {
+                        viewModel.setConnectStatus(0)
+                        socketManager.disconnect()
+                    }
                     else -> Log.e("connect Status", "value error" )
                 }
             }
@@ -468,6 +482,9 @@ class MainActivity : AppCompatActivity() {
                 Log.i("buttonSendMessage@Main>>", "lauch Result $ret")
             }
         }
+
+        socketManager.addEventListener("create_room_result", this.OnCreateRoomListener())
+        socketManager.addEventListener("counsel_rooms_info", this.OnRoomNameListener())
     }
 
     /*
@@ -532,6 +549,19 @@ class MainActivity : AppCompatActivity() {
             super.onOptionsItemSelected(item)
         }
         //return super.onOptionsItemSelected(item) 위의 else에 넣어줌
+    }
+
+    inner class OnCreateRoomListener : Emitter.Listener{
+        override fun call(vararg args: Any?) {
+            Log.i("OnCreateRoomListener", "called ${args[0]}")
+            Toast.makeText(applicationContext,"상담원 연결을 위해 대기합니다", Toast.LENGTH_SHORT ).show()
+        }
+    }
+
+    inner class OnRoomNameListener : Emitter.Listener{
+        override fun call(vararg args: Any?) {
+            Log.i("OnRoomNameListener", "called ${args[0]}")
+        }
     }
 
 }

@@ -2,6 +2,8 @@ package com.example.csapp
 
 import io.socket.client.IO
 import io.socket.client.Socket
+import io.socket.emitter.Emitter
+import io.socket.emitter.Emitter.Listener
 import java.net.URISyntaxException
 class SocketManager private constructor(){
     private var socket : Socket? = null
@@ -34,6 +36,18 @@ class SocketManager private constructor(){
 
     fun disconnect() {
         socket?.disconnect()
+    }
+
+    fun sendCreateRoomMessage(roomName : String) {
+        socket?.emit("create_room", roomName)
+    }
+
+    fun addEventListener(event : String, listener: Emitter.Listener){
+        socket?.on(event, listener)
+    }
+
+    fun removeEventListener(event : String, listener: Listener){
+        socket?.off(event, listener)
     }
 
 }
