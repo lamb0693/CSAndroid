@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.csapp.GlobalVariable
 import com.example.csapp.R
 import com.example.csapp.RetrofitScalarObject
+import com.example.csapp.SocketManager
 import com.example.csapp.databinding.ActivityDrawImageBinding
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -29,6 +30,8 @@ import java.io.IOException
 
 class DrawImageActivity : AppCompatActivity() {
     lateinit var myView : DrawImageView
+
+    private var  socketManager: SocketManager = SocketManager.getInstance()
 
     suspend fun uploadImage(strFileName : String) : String {
         Log.i("uploadImage@DrawImageActivity", "uploadImage executed")
@@ -53,13 +56,14 @@ class DrawImageActivity : AppCompatActivity() {
                     username, "PAINT", "그림판 이미지 입니다", filePart).execute()
             }
 
-            // response 를 처리 성공하면 counselList를 새로 불러 온다
             if(response.isSuccessful){
                 val result = response.body() as String
                 Log.i("uploadChatMessage >>>>", "$result")
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@DrawImageActivity.applicationContext,"upload에 성공하였습니다", Toast.LENGTH_SHORT)
                 }
+                // 여기는 불러  counselList를  불러 올 필요가 없다.  MainActivity로 가면 resume에서 불러 온다
+                socketManager.sendUpdateBoardMessage()
                 return "success"
             }else {
                 Log.i("login >>", "bad request ${response.code()}")
@@ -73,10 +77,18 @@ class DrawImageActivity : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
 
+        // socketManager instance를 얻음
+        if(socketManager==null) socketManager = SocketManager.getInstance()
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+        // socketManager instance를 얻음
+        if(socketManager==null) socketManager = SocketManager.getInstance()
 
         val bnImageView = ActivityDrawImageBinding.inflate(layoutInflater)
         setContentView(bnImageView.root)
@@ -111,12 +123,15 @@ class DrawImageActivity : AppCompatActivity() {
             //   현재의 lineList를 저장하고 file이름을 return으로 받음
             val strSavedFilename : String = myView.saveCurrentImage()
 
-
-            // file upload
-            GlobalScope.launch {
-                val ret : String = uploadImage(strSavedFilename )
-                Log.i("onCreate@Main>>", "lauch Result $ret")
-                uploadImage(strSavedFilename )
+            var username : String? = GlobalVariable.getUserName()
+            if(username == null || username.equals("")) {
+                Toast.makeText(applicationContext, "not login state", Toast.LENGTH_SHORT)
+            } else {
+                // file upload
+                GlobalScope.launch {
+                    val ret : String = uploadImage(strSavedFilename )
+                    Log.i("onCreate@Main>>", "lauch Result $ret")
+                }
             }
         }
     }

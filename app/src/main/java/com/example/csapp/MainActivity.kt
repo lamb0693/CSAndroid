@@ -56,7 +56,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var audioStreamer : AudioNetStreamer
     private lateinit var audioThread : Thread
 
-    private lateinit var socketManager: SocketManager
+    private var  socketManager: SocketManager = SocketManager.getInstance()
 
     /*
      * permissionLauncjer
@@ -152,6 +152,9 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+
+        // socketManager instance를 얻음
+        if(socketManager==null) socketManager = SocketManager.getInstance()
         // 여기서 부르면 null 이 됨,  따라서 밑의 사항은 안 됨
         val txtUserName : TextView? = findViewById<TextView>(R.id.textUserName)
         //val btnLogin  = findViewById<Button>(R.id.buttonLogin)
@@ -291,6 +294,7 @@ class MainActivity : AppCompatActivity() {
                     getCounselListFromServer()
                     binding.editMessage.setText("")
                 }
+                getCounselListFromServer()
                 return "success"
             }else {
                 Log.i("login >>", "bad request ${response.code()}")
@@ -328,19 +332,24 @@ class MainActivity : AppCompatActivity() {
             // response 를 처리 성공하면 counselList를 새로 불러 온다
             if(response.isSuccessful){
                 val result = response.body() as String
-                Log.i("uploadChatMessage >>>>", "$result")
+                Log.i("uploadAudio >>>>", "$result")
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@MainActivity.applicationContext,"upload에 성공하였습니다", Toast.LENGTH_SHORT)
                 }
+                getCounselListFromServer()
                 return "success"
             }else {
                 Log.i("login >>", "bad request ${response.code()}")
-                Toast.makeText(this@MainActivity.applicationContext,"upload실패 ${response.code()}", Toast.LENGTH_SHORT)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@MainActivity.applicationContext,"upload실패 ${response.code()}", Toast.LENGTH_SHORT)
+                }
                 return "error bad request ${response.code()}"
             }
         } catch (e: Throwable) {
             return e.message!!
-            Toast.makeText(this@MainActivity.applicationContext,"upload실패 ${e.message}", Toast.LENGTH_SHORT)
+            withContext(Dispatchers.Main) {
+                Toast.makeText(this@MainActivity.applicationContext,"upload실패 ${e.message}", Toast.LENGTH_SHORT)
+            }
 
         }
     }
@@ -352,14 +361,15 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // socketManager instance를 얻음
+        if(socketManager==null) socketManager = SocketManager.getInstance()
+
         Log.i("onCreate@Main>> ", "onCreate@Main is called")
 
         val bndMain = ActivityMainBinding.inflate(layoutInflater)
         setContentView(bndMain.root)
 
         setSupportActionBar(bndMain.toolbar)
-
-        socketManager = SocketManager.getInstance()
 
         audioStreamer = AudioNetStreamer(applicationContext)
         audioStreamer.setThreadStoppedListener(object : AudioThreadStoppedListener{
@@ -388,23 +398,26 @@ class MainActivity : AppCompatActivity() {
         btnMicOn = bndMain.buttonMicOn
         // micOn or Off 시 기능
         bndMain.buttonMicOn.setOnClickListener{
-            btnMicOn.isEnabled = false
-            micOn = !micOn
-            if(micOn){
-                btnMicOn.setBackgroundColor(Color.RED)
-                // 여기에 AudioStreamer를 켠다
-                audioThread = Thread(audioStreamer)
-                audioThread.start()
-
-                // ***************
+            if(GlobalVariable.getUserName() == null || GlobalVariable.getUserName().equals("")) {
+                Toast.makeText(this,"not login state", Toast.LENGTH_SHORT).show()
             } else {
-                btnMicOn.setBackgroundColor(Color.GRAY)
-                // 여기에 audio strema을 file로 저장한다
-                audioStreamer.stopStreaming()
+                btnMicOn.isEnabled = false
+                micOn = !micOn
+                if(micOn){
+                    btnMicOn.setBackgroundColor(Color.RED)
+                    // 여기에 AudioStreamer를 켠다
+                    audioThread = Thread(audioStreamer)
+                    audioThread.start()
 
-                // upload는 listner를 만들고 옮겼음
+                    // ***************
+                } else {
+                    btnMicOn.setBackgroundColor(Color.GRAY)
+                    // 여기에 audio strema을 file로 저장한다
+                    audioStreamer.stopStreaming()
 
-                // file 생성 임시 확인
+                    // upload는 listner를 만들고 옮겼음
+
+                    // file 생성 임시 확인
 //                val filesDir: File = applicationContext.filesDir
 //                val files: Array<out File>? = filesDir.listFiles()
 //
@@ -414,8 +427,10 @@ class MainActivity : AppCompatActivity() {
 //                        Log.d("FileList", file.name)
 //                    }
 //                }
+                }
+                btnMicOn.isEnabled = true
             }
-            btnMicOn.isEnabled = true
+
         }
 
         // connectCSR button 설정하고 viewModel값 초기화
@@ -554,7 +569,6 @@ class MainActivity : AppCompatActivity() {
     inner class OnCreateRoomListener : Emitter.Listener{
         override fun call(vararg args: Any?) {
             Log.i("OnCreateRoomListener", "called ${args[0]}")
-            Toast.makeText(applicationContext,"상담원 연결을 위해 대기합니다", Toast.LENGTH_SHORT ).show()
         }
     }
 

@@ -50,4 +50,8 @@ class SocketManager private constructor(){
         socket?.off(event, listener)
     }
 
+    fun sendUpdateBoardMessage(){
+        socket?.emit("update_board")
+    }
+
 }
