@@ -42,6 +42,10 @@ class SocketManager private constructor(){
         socket?.emit("create_room", roomName)
     }
 
+    fun sendLeaveRoomMessage(roomName : String){
+        socket?.emit("leave_room", roomName)
+    }
+
     fun addEventListener(event : String, listener: Emitter.Listener){
         socket?.on(event, listener)
     }

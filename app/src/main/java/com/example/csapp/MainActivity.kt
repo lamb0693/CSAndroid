@@ -294,7 +294,8 @@ class MainActivity : AppCompatActivity() {
                     getCounselListFromServer()
                     binding.editMessage.setText("")
                 }
-                getCounselListFromServer()
+                //getCounselListFromServer()
+                socketManager.sendUpdateBoardMessage()
                 return "success"
             }else {
                 Log.i("login >>", "bad request ${response.code()}")
@@ -336,7 +337,8 @@ class MainActivity : AppCompatActivity() {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@MainActivity.applicationContext,"upload에 성공하였습니다", Toast.LENGTH_SHORT)
                 }
-                getCounselListFromServer()
+                //getCounselListFromServer()
+                socketManager.sendUpdateBoardMessage()
                 return "success"
             }else {
                 Log.i("login >>", "bad request ${response.code()}")
@@ -363,6 +365,7 @@ class MainActivity : AppCompatActivity() {
 
         // socketManager instance를 얻음
         if(socketManager==null) socketManager = SocketManager.getInstance()
+        socketManager.connect()
 
         Log.i("onCreate@Main>> ", "onCreate@Main is called")
 
@@ -443,16 +446,15 @@ class MainActivity : AppCompatActivity() {
                 when(viewModel.getConnectStatus().value){
                     0 -> {
                         viewModel.setConnectStatus(1)
-                        socketManager.connect()
                         socketManager.sendCreateRoomMessage(GlobalVariable.getUserName().toString())
                     }
                     1 ->  {
                         viewModel.setConnectStatus(0)
-                        socketManager.disconnect()
+                        socketManager.sendLeaveRoomMessage(GlobalVariable.getUserName().toString())
                     }
                     2 ->  {
                         viewModel.setConnectStatus(0)
-                        socketManager.disconnect()
+                        socketManager.sendLeaveRoomMessage(GlobalVariable.getUserName().toString())
                     }
                     else -> Log.e("connect Status", "value error" )
                 }
@@ -500,6 +502,7 @@ class MainActivity : AppCompatActivity() {
 
         socketManager.addEventListener("create_room_result", this.OnCreateRoomListener())
         socketManager.addEventListener("counsel_rooms_info", this.OnRoomNameListener())
+        socketManager.addEventListener("update_board", this.OnUpdateBoardListener())
     }
 
     /*
@@ -575,6 +578,16 @@ class MainActivity : AppCompatActivity() {
     inner class OnRoomNameListener : Emitter.Listener{
         override fun call(vararg args: Any?) {
             Log.i("OnRoomNameListener", "called ${args[0]}")
+        }
+    }
+
+    inner class OnUpdateBoardListener : Emitter.Listener{
+        override fun call(vararg args: Any?) {
+            Log.i("OnUpdateBoardListener", "called ")
+            GlobalScope.launch {
+                this@MainActivity.getCounselListFromServer()
+            }
+
         }
     }
 
