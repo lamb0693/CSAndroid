@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.csapp.CouselListDTO
+import com.example.csapp.R
 import com.example.csapp.databinding.ItemsRecyclerBinding
 
 class CouselListViewAdapter(var counselList: MutableList<CouselListDTO>)
@@ -38,7 +39,12 @@ class CouselListViewAdapter(var counselList: MutableList<CouselListDTO>)
         Log.i("onBindViewHolder", "Data at position $position: ${counselList[position]}")
         try {
             binding.tvRvName.text = counselList[position].name
-            binding.tvRvContent.text = counselList[position].content
+            //binding.tvRvContent.text = counselList[position].content
+            when(counselList[position].content){
+                "AUDIO" -> binding.imageView.setImageResource(R.drawable.speaker)
+                "TEXT" -> binding.imageView.setImageResource(R.drawable.keyboard)
+                "PAINT" -> binding.imageView.setImageResource(R.drawable.board)
+            }
             binding.tvRvMessage.text = counselList[position].message
         } catch (e: Exception) {
             Log.e("Adapter", "Error binding data at position $position: ${e.message}")
