@@ -29,6 +29,7 @@ import com.example.csapp.ui.login.LoginActivity
 import com.example.csapp.ui.main.MainViewModel
 import com.example.csapp.ui.register.CreateMemberActivity
 import io.socket.emitter.Emitter
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -236,6 +237,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 2 -> {
                     btnConnectCSR?.setBackgroundColor(Color.RED)
+                    SimpleNotiDialog(this@MainActivity, "상담원 연결", "상담원이 연결되었습니다 \n 지금부터는 모든 활동이 상담원에 바로 전달됩니다").showDialog()
                 }
                 else -> {
                     Log.e("connect Status" , "error")
@@ -445,14 +447,17 @@ class MainActivity : AppCompatActivity() {
                 Log.i("btnConnect", "clicked")
                 when(viewModel.getConnectStatus().value){
                     0 -> {
+                        SimpleNotiDialog(this@MainActivity, "상담원 연결", "상담원 연결을 위해 대기합니다").create().show()
                         viewModel.setConnectStatus(1)
                         socketManager.sendCreateRoomMessage(GlobalVariable.getUserName().toString())
                     }
                     1 ->  {
+                        SimpleNotiDialog(this@MainActivity, "상담원 연결", "대기 중인 연결을 중단합니다").showDialog()
                         viewModel.setConnectStatus(0)
                         socketManager.sendLeaveRoomMessage(GlobalVariable.getUserName().toString())
                     }
                     2 ->  {
+                        SimpleNotiDialog(this@MainActivity, "상담원 연결", "연결 중인 상담원 과의 연결을 종료합니다").showDialog()
                         viewModel.setConnectStatus(0)
                         socketManager.sendLeaveRoomMessage(GlobalVariable.getUserName().toString())
                     }
@@ -503,6 +508,7 @@ class MainActivity : AppCompatActivity() {
         socketManager.addEventListener("create_room_result", this.OnCreateRoomListener())
         socketManager.addEventListener("counsel_rooms_info", this.OnRoomNameListener())
         socketManager.addEventListener("update_board", this.OnUpdateBoardListener())
+        socketManager.addEventListener("csr_joined", this.OnCSRJoined())
     }
 
     /*
@@ -589,6 +595,20 @@ class MainActivity : AppCompatActivity() {
             }
 
         }
+    }
+
+    inner class OnCSRJoined : Emitter.Listener{
+        override fun call(vararg args: Any?) {
+            // viewModel의 connectStatus 만 바꾸고 observer에서 처리
+            Log.i("OnCSRJoined", "CSR Joined")
+
+            val mainScope = CoroutineScope(Dispatchers.Main)
+            // UI를 변경하려면 main thread에서 실행
+            mainScope.launch {
+                viewModel.setConnectStatus(2)
+            }
+        }
+
     }
 
 }

@@ -3,12 +3,42 @@ package com.example.csapp.ui.register
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import androidx.lifecycle.lifecycleScope
+import com.example.csapp.RegisterDTO
 import com.example.csapp.RetrofitObject
+import com.example.csapp.RetrofitScalarObject
+import com.example.csapp.RetrofitScalarPlusObject
 import com.example.csapp.TokenStructure
 import com.example.csapp.databinding.ActivityCreateMemberBinding
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 
 class CreateMemberActivity : AppCompatActivity() {
+
+
+    suspend fun register(dto : RegisterDTO)  : String {
+        var returnVal : String = ""
+        RetrofitScalarPlusObject.getApiService().register(dto)
+            .enqueue(object : retrofit2.Callback<String> {
+
+                override fun onResponse(
+                    call: retrofit2.Call<String>,
+                    response: retrofit2.Response<String>
+                ) {
+                    Log.i("login", "response : ${response.body()}")
+                    returnVal = response.body().toString()
+                }
+
+                override fun onFailure(call: retrofit2.Call<String>, t: Throwable) {
+                    Log.i("login", "response : fail")
+                    returnVal = t.message.toString()
+                }
+            })
+        return returnVal
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -17,25 +47,16 @@ class CreateMemberActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.btnRegister.setOnClickListener {
-            val param = mutableMapOf<String, String>()
-            param["tel"] = "01031795981"
-            param["password"] = "00000000"
-            RetrofitObject.getApiService().login(param )
-                .enqueue(object : retrofit2.Callback<TokenStructure> {
-                    override fun onResponse(
-                        call: retrofit2.Call<TokenStructure>,
-                        response: retrofit2.Response<TokenStructure>
-                    ) {
+            var dto : RegisterDTO = RegisterDTO(
+                binding.editTel.text.toString(),
+                binding.editName.text.toString(),
+                binding.editPassword1.text.toString()
+            )
 
-                        Log.i("login", "response : ${response.body()}")
-                    }
-
-                    override fun onFailure(call: retrofit2.Call<TokenStructure>, t: Throwable) {
-                        Log.i("login", "response : fail")
-                    }
-
-                })
-
+            lifecycleScope.launch {
+                var ret = register(dto)
+                Log.i("return from register", "$ret")
+            }
 
         }
 

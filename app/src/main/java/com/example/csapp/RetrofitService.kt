@@ -44,4 +44,9 @@ interface RetrofitService {
         @Header("Authorization") authToken: String,
         @Field("id") id: Long
     ): retrofit2.Call<ResponseBody>
+
+    @POST("/register")
+    suspend fun register(
+        @Body dto : RegisterDTO
+    ) : retrofit2.Call<String>
 }
