@@ -1,10 +1,12 @@
 package com.example.csapp.ui.counselList
 
+import android.graphics.Color
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
 import com.example.csapp.CouselListDTO
+import com.example.csapp.GlobalVariable
 import com.example.csapp.R
 import com.example.csapp.databinding.ItemsRecyclerBinding
 
@@ -38,8 +40,15 @@ class CouselListViewAdapter(var counselList: MutableList<CouselListDTO>)
         Log.i("onBindViewHolder", counselList.toString())
         Log.i("onBindViewHolder", "Data at position $position: ${counselList[position]}")
         try {
-            binding.tvRvName.text = counselList[position].name
-            //binding.tvRvContent.text = counselList[position].content
+            if(counselList[position].name.contains("CSR")){
+                binding.tvRvName.text = "상담원"
+                binding.tvRvName.setTextColor(Color.MAGENTA)
+            } else {
+                binding.tvRvName.text = counselList[position].name
+                binding.tvRvName.setTextColor(Color.BLUE)
+            }
+
+            binding.tvRvTimestamp.text = counselList[position].strUpdatedAt
             when(counselList[position].content){
                 "AUDIO" -> binding.imageView.setImageResource(R.drawable.speaker)
                 "TEXT" -> binding.imageView.setImageResource(R.drawable.keyboard)
