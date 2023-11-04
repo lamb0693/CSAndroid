@@ -608,7 +608,6 @@ class MainActivity : AppCompatActivity() {
                 viewModel.setConnectStatus(2)
             }
         }
-
     }
 
 }

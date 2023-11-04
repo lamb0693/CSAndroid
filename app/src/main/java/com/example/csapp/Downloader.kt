@@ -66,7 +66,8 @@ class Downloader {
             //val file = File(context.filesDir, "downloadedFile.wav")
             //val file = File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_MUSIC), "downloaded_audio.mp3")
             val file = ContentValues()
-            file.put(MediaStore.Audio.Media.DISPLAY_NAME, "downloaded_audio.mp3")
+            val dwonFileName = "audio" + System.currentTimeMillis() + ".wav"
+            file.put(MediaStore.Audio.Media.DISPLAY_NAME, dwonFileName)
             file.put(MediaStore.Audio.Media.MIME_TYPE, "audio/mpeg")
 
             val audioUri = context.contentResolver.insert(MediaStore.Audio.Media.EXTERNAL_CONTENT_URI, file)
@@ -86,7 +87,7 @@ class Downloader {
             outputStream?.flush()
             outputStream?.close()
             inputStream.close()
-            Log.i("saveFileToInternalStorage", "file saved to downloadedFile.wav")
+            Log.i("saveFileToInternalStorage", "file saved to $dwonFileName")
 
             val mediaPlayer = MediaPlayer()
             mediaPlayer.setDataSource(context, audioUri)

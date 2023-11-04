@@ -40,12 +40,12 @@ class CouselListViewAdapter(var counselList: MutableList<CouselListDTO>)
         Log.i("onBindViewHolder", counselList.toString())
         Log.i("onBindViewHolder", "Data at position $position: ${counselList[position]}")
         try {
-            if(counselList[position].name.contains("CSR")){
-                binding.tvRvName.text = "상담원"
-                binding.tvRvName.setTextColor(Color.MAGENTA)
-            } else {
+            if(counselList[position].tel.equals(GlobalVariable.getUserName())){
                 binding.tvRvName.text = counselList[position].name
                 binding.tvRvName.setTextColor(Color.BLUE)
+            } else {
+                binding.tvRvName.text = "상담원"
+                binding.tvRvName.setTextColor(Color.MAGENTA)
             }
 
             binding.tvRvTimestamp.text = counselList[position].strUpdatedAt
