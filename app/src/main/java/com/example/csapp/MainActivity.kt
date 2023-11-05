@@ -262,8 +262,10 @@ class MainActivity : AppCompatActivity() {
                 }
                 R.id.menuPaint -> {
                     Log.i("onCreate>>", "menuPaint clicked")
-                    val intent = Intent(this, DrawImageActivity::class.java)
-                    startActivity(intent)
+                    Intent(this, DrawImageActivity::class.java).also {
+                        it.putExtra("status", viewModel.getConnectStatus().value)
+                        startActivity(it)
+                    }
                     return@setOnMenuItemClickListener true
                 }
                 else -> return@setOnMenuItemClickListener false
@@ -293,11 +295,17 @@ class MainActivity : AppCompatActivity() {
                 val result = response.body() as String
                 Log.i("uploadChatMessage >>>>", "$result")
                 withContext(Dispatchers.Main) {
-                    getCounselListFromServer()
                     binding.editMessage.setText("")
+                    Toast.makeText(this@MainActivity.applicationContext,"message upload에 성공하였습니다", Toast.LENGTH_SHORT)
                 }
-                //getCounselListFromServer()
-                socketManager.sendUpdateBoardMessage()
+
+                if(viewModel.getConnectStatus().value == 2){
+                    socketManager.sendUpdateBoardMessage()
+                } else {
+                    withContext(Dispatchers.Main) {
+                        getCounselListFromServer()
+                    }
+                }
                 return "success"
             }else {
                 Log.i("login >>", "bad request ${response.code()}")
@@ -339,8 +347,11 @@ class MainActivity : AppCompatActivity() {
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@MainActivity.applicationContext,"upload에 성공하였습니다", Toast.LENGTH_SHORT)
                 }
-                //getCounselListFromServer()
-                socketManager.sendUpdateBoardMessage()
+                if(viewModel.getConnectStatus().value == 2){
+                    socketManager.sendUpdateBoardMessage()
+                } else {
+                    getCounselListFromServer()
+                }
                 return "success"
             }else {
                 Log.i("login >>", "bad request ${response.code()}")
@@ -465,6 +476,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
         }
+        // 여기 수정 확인 ***************
         viewModel.setConnectStatus(0)
 
         bndMain.editMessage.setOnEditorActionListener { _, actionId, event ->
@@ -558,8 +570,9 @@ class MainActivity : AppCompatActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when(item.itemId){
         R.id.menuLogin -> {
             Log.i("onCreate>>", "menu1 clicked")
-            val intent = Intent(this, LoginActivity::class.java)
-            getResult.launch(intent)
+            Intent(this, LoginActivity::class.java).also {
+                getResult.launch(it)
+            }
             true // 소모시켰으면 true
         }
         R.id.menuRegister-> {

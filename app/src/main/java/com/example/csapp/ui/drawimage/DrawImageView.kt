@@ -166,11 +166,11 @@ class DrawImageView(context : Context) : View(context) {
 
 
             Log.i("saveCurrentImage@DrawImageView>>", "file saved")
-            Toast.makeText(contextParent, "file saved", Toast.LENGTH_SHORT).show()
+//            Toast.makeText(contextParent, "file saved", Toast.LENGTH_SHORT).show()
 
         } catch (e: Exception) {
             Log.i("saveCurrentImage@DrawImageView>>", "saving to file error : ${e.message}")
-            Toast.makeText(contextParent, "saving to file error : ${e.message}", Toast.LENGTH_SHORT).show()
+//            Toast.makeText(contextParent, "saving to file error : ${e.message}", Toast.LENGTH_SHORT).show()
         }
 
         return strFileName

@@ -7,6 +7,9 @@ import android.media.AudioRecord
 import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.util.Log
+import androidx.annotation.UiThread
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.File
@@ -37,6 +40,9 @@ class AudioNetStreamer(private val context: Context) : Runnable {
     @SuppressLint("MissingPermission")
     override fun run() {
         Log.i(">>> audionetprocess", "started")
+        // thred만 다시 실행 시키면 true로 설정
+        bStreaming = true
+
         audioRecord = AudioRecord(
             MediaRecorder.AudioSource.MIC,
             44100,
@@ -44,24 +50,35 @@ class AudioNetStreamer(private val context: Context) : Runnable {
             AudioFormat.ENCODING_PCM_16BIT,
             audioBufferSize
         )
-        audioRecord?.startRecording()
+        if(audioRecord == null) {
+            val scope = CoroutineScope(Dispatchers.Main)
+
+            scope.launch {
+                SimpleNotiDialog(context, "error", "audioRecorder 생성 실패")
+            }
+        } else {
+            audioRecord?.startRecording()
+        }
 
         val audioFileName = "audio_sample.raw"
         val audioFile = File(context.filesDir, audioFileName) // Use the application's private files directory
-
+        Log.i("streaming audioFile", audioFile.name + bStreaming.toString())
         val audioOutputStream = FileOutputStream(audioFile)
 
         val audioData = ByteArray(audioBufferSize)
 
         while (bStreaming) {
             val bytesRead = audioRecord?.read(audioData, 0, audioBufferSize) ?: 0
+            Log.i("streaming", bytesRead.toString())
             if (bytesRead > 0) {
                 // 서버로 보내기
+                writeAudioDataToFile(audioData, audioOutputStream)
+                SocketManager.getInstance().sendAudioStream(audioData)
 
                 // file로 저장
-                GlobalScope.launch {
-                    writeAudioDataToFile(audioData, audioOutputStream)
-                }
+//                GlobalScope.launch {
+//                    writeAudioDataToFile(audioData, audioOutputStream)
+//                }
             }
         }
 
@@ -79,7 +96,7 @@ class AudioNetStreamer(private val context: Context) : Runnable {
 
     }
 
-    suspend fun writeAudioDataToFile(audioData: ByteArray, audioOutputStream: FileOutputStream) {
+    fun writeAudioDataToFile(audioData: ByteArray, audioOutputStream: FileOutputStream) {
         audioOutputStream.write(audioData)
         audioOutputStream.flush()
     }

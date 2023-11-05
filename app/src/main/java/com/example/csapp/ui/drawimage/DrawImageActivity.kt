@@ -11,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.example.csapp.GlobalVariable
 import com.example.csapp.R
 import com.example.csapp.RetrofitScalarObject
+import com.example.csapp.SimpleNotiDialog
 import com.example.csapp.SocketManager
 import com.example.csapp.databinding.ActivityDrawImageBinding
 import com.google.gson.Gson
@@ -30,6 +31,7 @@ import java.io.IOException
 
 class DrawImageActivity : AppCompatActivity() {
     lateinit var myView : DrawImageView
+    private var connectionStatus : Int = 0
 
     private var  socketManager: SocketManager = SocketManager.getInstance()
 
@@ -59,21 +61,27 @@ class DrawImageActivity : AppCompatActivity() {
             if(response.isSuccessful){
                 val result = response.body() as String
                 Log.i("uploadChatMessage >>>>", "$result")
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(this@DrawImageActivity.applicationContext,"upload에 성공하였습니다", Toast.LENGTH_SHORT)
+                // connection안 된 경우에는 counselList를  불러 올 필요가 없다.  MainActivity로 가면 resume에서 불러 온다
+                if(connectionStatus == 2){
+                    socketManager.sendUpdateBoardMessage()
                 }
-                // 여기는 불러  counselList를  불러 올 필요가 없다.  MainActivity로 가면 resume에서 불러 온다
-                socketManager.sendUpdateBoardMessage()
+                runOnUiThread {
+                    SimpleNotiDialog(this@DrawImageActivity, "upload", "그림 파일이 업로드 됨").showDialog()
+//                    Toast.makeText(this@DrawImageActivity,"upload에 성공하였습니다", Toast.LENGTH_SHORT)
+                }
                 return "success"
             }else {
                 Log.i("login >>", "bad request ${response.code()}")
-                Toast.makeText(this@DrawImageActivity.applicationContext,"upload실패 ${response.code()}", Toast.LENGTH_SHORT)
+                runOnUiThread{
+                    Toast.makeText(this@DrawImageActivity,"upload실패 ${response.code()}", Toast.LENGTH_SHORT).show()
+                }
                 return "error bad request ${response.code()}"
             }
         } catch (e: Throwable) {
             return e.message!!
-            Toast.makeText(this@DrawImageActivity.applicationContext,"upload실패 ${e.message}", Toast.LENGTH_SHORT)
-
+            runOnUiThread{
+                Toast.makeText(this@DrawImageActivity,"upload실패 ${e.message}", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -89,6 +97,9 @@ class DrawImageActivity : AppCompatActivity() {
 
         // socketManager instance를 얻음
         if(socketManager==null) socketManager = SocketManager.getInstance()
+
+        // intent를 이용해서 onConnect값을 바꾸어 주어야 함
+        connectionStatus =  intent.getIntExtra("status", 0)
 
         val bnImageView = ActivityDrawImageBinding.inflate(layoutInflater)
         setContentView(bnImageView.root)

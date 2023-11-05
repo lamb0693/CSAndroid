@@ -19,9 +19,8 @@
 
     <LinearLayout
         android:id="@+id/linearLayout2"
-        android:layout_width="410dp"
+        android:layout_width="match_parent"
         android:layout_height="41dp"
-        android:layout_marginStart="4dp"
         android:background="#333333"
         android:orientation="horizontal"
         android:padding="5dp"
@@ -36,23 +35,7 @@
             android:background="@drawable/button_rectangle"
             android:text="MIC" />
 
-        <!--        <androidx.appcompat.widget.AppCompatButton-->
-        <!--            android:id="@+id/btnRegister"-->
-        <!--            android:layout_width="wrap_content"-->
-        <!--            android:layout_height="match_parent"-->
-        <!--            android:background="@drawable/button_rectangle"-->
-        <!--            android:layout_marginRight="10dp"-->
-        <!--            android:text="회원가입" />-->
-
-        <!--        <androidx.appcompat.widget.AppCompatButton-->
-        <!--            android:id="@+id/buttonLogin"-->
-        <!--            android:layout_width="wrap_content"-->
-        <!--            android:layout_height="match_parent"-->
-        <!--            android:background="@drawable/button_rectangle"-->
-        <!--            android:layout_marginRight="10dp"-->
-        <!--            android:text="Login" />-->
-
-        <androidx.appcompat.widget.AppCompatButton
+         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/buttonConnectCSR"
             android:layout_width="wrap_content"
             android:layout_height="match_parent"
@@ -78,27 +61,39 @@
             android:textSize="18sp" />
     </LinearLayout>
 
+<!--    <androidx.recyclerview.widget.RecyclerView-->
+<!--        android:id="@+id/recyclerView"-->
+<!--        android:layout_width="411dp"-->
+<!--        android:layout_height="585dp"-->
+<!--        android:orientation="vertical"-->
+<!--        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"-->
+<!--        app:layout_constraintBottom_toTopOf="@+id/linearLayout3"-->
+<!--        app:layout_constraintEnd_toEndOf="parent"-->
+<!--        app:layout_constraintHorizontal_bias="1.0"-->
+<!--        app:layout_constraintStart_toStartOf="parent"-->
+<!--        app:layout_constraintTop_toBottomOf="@+id/linearLayout2"-->
+<!--        tools:listitem="@layout/items_recycler" />-->
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
-        android:layout_width="408dp"
-        android:layout_height="539dp"
-        android:layout_marginStart="4dp"
-        android:orientation="vertical"
-        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
-        app:layout_constraintStart_toStartOf="parent"
+        android:layout_width="411dp"
+        android:layout_height="0dp"
         app:layout_constraintTop_toBottomOf="@+id/linearLayout2"
+        app:layout_constraintBottom_toTopOf="@+id/linearLayout3"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
         tools:listitem="@layout/items_recycler" />
 
     <LinearLayout
         android:id="@+id/linearLayout3"
         android:layout_width="match_parent"
         android:layout_height="48dp"
-        android:layout_marginBottom="16dp"
         android:orientation="horizontal"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/recyclerView"
-        app:layout_constraintVertical_bias="0.235">
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/buttonPlus"
@@ -125,15 +120,6 @@
             android:layout_weight="1"
             android:background="@drawable/button_rectangle"
             android:text="보내기" />
-
-        <!--        <androidx.appcompat.widget.AppCompatButton-->
-        <!--            android:id="@+id/buttonUploadImage"-->
-        <!--            android:layout_width="68dp"-->
-        <!--            android:layout_height="match_parent"-->
-        <!--            android:layout_marginRight="10dp"-->
-        <!--            android:background="@drawable/button_rectangle"-->
-        <!--            android:text="그림U"-->
-        <!--            android:textSize="12sp" />-->
 
     </LinearLayout>
 

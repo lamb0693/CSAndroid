@@ -55,7 +55,12 @@ class SocketManager private constructor(){
     }
 
     fun sendUpdateBoardMessage(){
-        socket?.emit("update_board")
+        socket?.emit("update_board", GlobalVariable.getUserName())
     }
+
+    fun sendAudioStream(audioData: ByteArray) {
+        socket?.emit("audio_data", GlobalVariable.getUserName(), audioData)
+    }
+
 
 }
