@@ -5,7 +5,10 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
+import android.provider.MediaStore
 import android.util.Log
 import android.view.KeyEvent
 import android.view.Menu
@@ -19,6 +22,7 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -38,6 +42,8 @@ import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
 import java.io.File
+import java.text.SimpleDateFormat
+import java.util.Date
 
 
 class MainActivity : AppCompatActivity() {
@@ -58,6 +64,8 @@ class MainActivity : AppCompatActivity() {
     private lateinit var audioThread : Thread
 
     private var  socketManager: SocketManager = SocketManager.getInstance()
+
+    private lateinit var imgFilePath : String
 
     /*
      * permissionLauncjer
@@ -99,6 +107,35 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // 찍은 사진의  filepath를 받아 upload 한다
+    val requestCameraLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult() ) { result ->
+            Log.i("requestCameraLauncher", "$imgFilePath")
+            if(result.resultCode == RESULT_OK){
+                Log.i("requestCameraLauncher", "Result Ok")
+                CoroutineScope(Dispatchers.Default).also {
+                    it.launch {
+                        uploadPicture(imgFilePath)
+                    }
+                }
+            }
+    }
+
+    fun getFilePathFromUri(uri: Uri): String? {
+        val contentResolver = contentResolver
+        val projection = arrayOf(MediaStore.Images.Media.DATA)
+        val cursor = contentResolver.query(uri, projection, null, null, null)
+
+        cursor?.use {
+            val columnIndex = it.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+            if (it.moveToFirst()) {
+                return it.getString(columnIndex)
+            }
+        }
+
+        return null
+    }
+
     /*
      *퍼미션을 체크하고 없으면 요청한다
      */
@@ -109,16 +146,20 @@ class MainActivity : AppCompatActivity() {
             "android.permission.RECORD_AUDIO")
         val statusStorage = ContextCompat.checkSelfPermission(this,
             "android.permission.WRITE_EXTERNAL_STORAGE")
+        val statusRead = ContextCompat.checkSelfPermission(this,
+            "android.permission.READ_EXTERNAL_STORAGE")
 
         if (statusNoti == PackageManager.PERMISSION_DENIED ||
                 statusAudio == PackageManager.PERMISSION_DENIED ||
-                    statusStorage == PackageManager.PERMISSION_DENIED) {
+                    statusStorage == PackageManager.PERMISSION_DENIED ||
+                        statusRead == PackageManager.PERMISSION_DENIED) {
             Log.d(">>", "One or more Permission Denied Starting permission Launcher")
             permissionLauncher.launch(
                 arrayOf(
                     "android.permission.POST_NOTIFICATIONS",
                     "android.permission.RECORD_AUDIO",
-                    "android.permission.WRITE_EXTERNAL_STORAGE"
+                    "android.permission.WRITE_EXTERNAL_STORAGE",
+                    "android.permission.READ_EXTERNAL_STORAGE"
                 )
             )
         }
@@ -252,12 +293,33 @@ class MainActivity : AppCompatActivity() {
     */
     fun showPulsPopupMenu(binding : ActivityMainBinding){
         Log.i("onCreate>>", "+ button clicked")
+
+        var username: String? = GlobalVariable.getUserName()
+        if (username == null) {
+            SimpleNotiDialog(this, "오류", "로그인 먼저 하세요").showDialog()
+            return
+        }
+
         val popUpMenu = PopupMenu(this, binding.buttonPlus)
         popUpMenu.menuInflater.inflate(R.menu.plus_menu, popUpMenu.menu)
         popUpMenu.setOnMenuItemClickListener { item ->
             when (item.itemId) {
                 R.id.menuPicture -> {
-                    Log.i("onCreate>>", "menuPicture clicked")
+                    var timeStamp : String = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
+                    var storageDir : File? = getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+                    val file = File.createTempFile(
+                        "f${timeStamp}", ".jpg", storageDir
+                    )
+                    imgFilePath = file.absolutePath
+
+                    val photoUri : Uri = FileProvider.getUriForFile(
+                        this, "com.example.csapp.fileprovider", file
+                    )
+                    Intent(MediaStore.ACTION_IMAGE_CAPTURE).also{
+                        it.putExtra(MediaStore.EXTRA_OUTPUT, photoUri)
+                        requestCameraLauncher.launch(it)
+                    }
+
                     return@setOnMenuItemClickListener true
                 }
                 R.id.menuPaint -> {
@@ -317,6 +379,60 @@ class MainActivity : AppCompatActivity() {
 
     }
 
+    suspend fun uploadPicture(strFileName : String) : String {
+        Log.i("uploadPicture", "uploadPicture executed")
+        try {
+            val strToken : String? = GlobalVariable.getAccessToken()
+            if(strToken == null) return ("accesstoken null")
+            var username : String? = GlobalVariable.getUserName()
+            if(username == null) return ("username null")
+
+            var filePart: MultipartBody.Part? = null
+            if (strFileName != null) {
+                //val fileDir = this.applicationContext.filesDir
+                val upFile = File(strFileName)
+                Log.i("uploadImage", "${upFile}")
+                val requestBodyFile =
+                    RequestBody.create(MediaType.parse("multipart/form-data"), upFile)
+                filePart = MultipartBody.Part.createFormData("file", upFile.name, requestBodyFile)
+            }
+
+            // return이 plain text라 scalar인 service를 사용한다
+            val response = withContext(Dispatchers.IO) {
+                RetrofitScalarObject.getApiService().createBoard("Bearer:"+strToken,
+                    username, "IMAGE", "사진 파일 입니다", filePart).execute()
+            }
+
+            // response 를 처리 성공하면 counselList를 새로 불러 온다
+            if(response.isSuccessful){
+                val result = response.body() as String
+                Log.i("uploadPicture >>>>", "$result")
+                if(viewModel.getConnectStatus().value == 2){
+                    socketManager.sendUpdateBoardMessage()
+                } else {
+                    getCounselListFromServer()
+                }
+                CoroutineScope(Dispatchers.Main).also{
+                    it.launch { Toast.makeText(this@MainActivity,"upload에 성공하였습니다", Toast.LENGTH_SHORT).show() }
+                }
+                return "success"
+            }else {
+                Log.i("uploadPicture>>", "bad request ${response.code()}")
+                return "error bad request ${response.code()}"
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@MainActivity,"upload실패 ${response.code()}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        } catch (e: Throwable) {
+            Log.e("uploadPicture", "${e.message}")
+            return e.message!!
+            withContext(Dispatchers.Main) {
+                Toast.makeText(this@MainActivity,"upload실패 ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+
+        }
+    }
+
     suspend fun uploadAudio(strFileName : String) : String {
         Log.i("uploadImage@DrawImageActivity", "uploadAudio executed")
         try {
@@ -354,7 +470,7 @@ class MainActivity : AppCompatActivity() {
                 }
                 return "success"
             }else {
-                Log.i("login >>", "bad request ${response.code()}")
+                Log.i("uploadAudio >>", "bad request ${response.code()}")
                 withContext(Dispatchers.Main) {
                     Toast.makeText(this@MainActivity.applicationContext,"upload실패 ${response.code()}", Toast.LENGTH_SHORT)
                 }
@@ -415,7 +531,7 @@ class MainActivity : AppCompatActivity() {
         // micOn or Off 시 기능
         bndMain.buttonMicOn.setOnClickListener{
             if(GlobalVariable.getUserName() == null || GlobalVariable.getUserName().equals("")) {
-                Toast.makeText(this,"not login state", Toast.LENGTH_SHORT).show()
+                SimpleNotiDialog(this, "알림", "로그인 먼저 하세요").showDialog()
             } else {
                 btnMicOn.isEnabled = false
                 micOn = !micOn
@@ -460,7 +576,7 @@ class MainActivity : AppCompatActivity() {
         btnConnectCSR = bndMain.buttonConnectCSR
         btnConnectCSR.setOnClickListener{
             if(GlobalVariable.getUserName() == null || GlobalVariable.getUserName().equals("")) {
-                Toast.makeText(this,"not login state", Toast.LENGTH_SHORT).show()
+                SimpleNotiDialog(this, "알림", "로그인 먼저 하세요").showDialog()
             } else {
                 Log.i("btnConnect", "clicked")
                 when(viewModel.getConnectStatus().value){

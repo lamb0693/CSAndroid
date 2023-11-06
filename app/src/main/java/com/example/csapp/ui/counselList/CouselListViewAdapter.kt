@@ -53,6 +53,7 @@ class CouselListViewAdapter(var counselList: MutableList<CouselListDTO>)
                 "AUDIO" -> binding.imageView.setImageResource(R.drawable.speaker)
                 "TEXT" -> binding.imageView.setImageResource(R.drawable.keyboard)
                 "PAINT" -> binding.imageView.setImageResource(R.drawable.board)
+                "IMAGE" -> binding.imageView.setImageResource(R.drawable.camera)
             }
             binding.tvRvMessage.text = counselList[position].message
         } catch (e: Exception) {
