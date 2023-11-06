@@ -421,6 +421,9 @@ class MainActivity : AppCompatActivity() {
                 micOn = !micOn
                 if(micOn){
                     btnMicOn.setBackgroundColor(Color.RED)
+                    if(viewModel.getConnectStatus().value == 2 ){
+                        socketManager.sendAudioStartMessage()
+                    }
                     // 여기에 AudioStreamer를 켠다
                     audioThread = Thread(audioStreamer)
                     audioThread.start()
@@ -430,6 +433,10 @@ class MainActivity : AppCompatActivity() {
                     btnMicOn.setBackgroundColor(Color.GRAY)
                     // 여기에 audio strema을 file로 저장한다
                     audioStreamer.stopStreaming()
+
+                    if(viewModel.getConnectStatus().value == 2 ){
+                        socketManager.sendAudioStopMessage()
+                    }
 
                     // upload는 listner를 만들고 옮겼음
 

@@ -14,6 +14,7 @@ import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
 import com.example.csapp.PointSerializable
+import com.example.csapp.SocketManager
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.BufferedReader
@@ -54,6 +55,7 @@ class DrawImageView(context : Context) : View(context) {
             //binding.numberTextview.text = it.toString()
             Log.i(TAG, "lineList changed")
             invalidate()
+            sendCurrentImageToCSR()
         })
     }
 
@@ -129,7 +131,7 @@ class DrawImageView(context : Context) : View(context) {
 
     fun saveCurrentImage() : String {
         lateinit var strFileName : String
-        Toast.makeText(contextParent, "saving", Toast.LENGTH_SHORT)
+        //Toast.makeText(contextParent, "saving", Toast.LENGTH_SHORT)
 
         try {
             val strTime : Long = System.currentTimeMillis()
@@ -208,6 +210,34 @@ class DrawImageView(context : Context) : View(context) {
         }
     }
 
+    fun sendCurrentImageToCSR(){
+        try {
+            //viewModel의 lineList를  ArrayList<ArrayList<PointF>>로 변경
+            val lineList : Array<Array<PointF>>? = viewModel.lineList.value?.toTypedArray()
+            val lineListAL  = ArrayList<ArrayList<PointSerializable>>()
+
+            if(lineList != null){
+                for(line : Array<PointF> in lineList){
+                    var lineAL = ArrayList<PointSerializable>()
+                    for(point : PointF in line){
+                        lineAL.add( PointSerializable(point.x.toInt(), point.y.toInt()))
+                    }
+                    lineListAL.add( lineAL )
+                }
+            }
+
+            // Gson을 이용 Json으로 변경
+            val gson = Gson()
+            val jsonOutput = gson.toJson(lineList)
+
+            // send
+            SocketManager.getInstance().sendCanvasData(jsonOutput)
+
+        } catch (e: Exception) {
+            Log.e("sendCurrentImageToCSR>", "${e.message}")
+//            Toast.makeText(contextParent, "saving to file error : ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
 }
 
 //      Json을 이용해 저장하는 방법으로 대치 예정

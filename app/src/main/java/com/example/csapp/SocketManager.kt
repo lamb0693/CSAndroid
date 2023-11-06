@@ -58,9 +58,20 @@ class SocketManager private constructor(){
         socket?.emit("update_board", GlobalVariable.getUserName())
     }
 
+    fun sendAudioStartMessage(){
+        socket?.emit("customor_audio_start", GlobalVariable.getUserName())
+    }
+
+    fun sendAudioStopMessage(){
+        socket?.emit("customor_audio_stop", GlobalVariable.getUserName())
+    }
+
     fun sendAudioStream(audioData: ByteArray) {
         socket?.emit("audio_data", GlobalVariable.getUserName(), audioData)
     }
 
+    fun sendCanvasData(boardData : String) {
+        socket?.emit("canvas_data", GlobalVariable.getUserName(), boardData)
+    }
 
 }
