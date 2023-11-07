@@ -67,6 +67,8 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var imgFilePath : String
 
+    private var audioReceivingThread : AudioNetReceiver? = null
+
     /*
      * permissionLauncjer
      */
@@ -644,6 +646,8 @@ class MainActivity : AppCompatActivity() {
         socketManager.addEventListener("counsel_rooms_info", this.OnRoomNameListener())
         socketManager.addEventListener("update_board", this.OnUpdateBoardListener())
         socketManager.addEventListener("csr_joined", this.OnCSRJoined())
+        socketManager.addEventListener("csr_audio_started", this.OnCSRAudioStarted())
+        socketManager.addEventListener("csr_audio_stopped", this.OnCSRAudioStopped())
     }
 
     /*
@@ -743,6 +747,35 @@ class MainActivity : AppCompatActivity() {
             mainScope.launch {
                 viewModel.setConnectStatus(2)
             }
+        }
+    }
+
+    inner class OnCSRAudioStarted : Emitter.Listener{
+        override fun call(vararg args: Any?) {
+            // viewModel의 connectStatus 만 바꾸고 observer에서 처리
+            Log.i("OnCSRAudioStarted", "started")
+
+//            if(audioReceivingThread == null){
+//                audioReceivingThread = AudioNetReceiver(this@MainActivity)
+//                audioReceivingThread?.run()
+//            } else {
+//                Log.e("OnCSRAudioStarted", "audioReceivingThread not null")
+//            }
+
+        }
+    }
+    inner class OnCSRAudioStopped : Emitter.Listener{
+        override fun call(vararg args: Any?) {
+            // viewModel의 connectStatus 만 바꾸고 observer에서 처리
+            Log.i("OnCSRAudioStopped", "stopped")
+//
+//            if(audioReceivingThread != null){
+//                audioReceivingThread?.stopReceiving()
+//                audioReceivingThread = null
+//            } else {
+//                Log.e("OnCSRAudioStarted", "audioReceivingThread already null")
+//            }
+
         }
     }
 
