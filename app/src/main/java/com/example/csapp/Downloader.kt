@@ -6,13 +6,19 @@ import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
 import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
+import android.graphics.BitmapFactory
 import android.media.MediaPlayer
 import android.os.Environment
 import android.os.FileUtils
 import android.provider.MediaStore
 import android.util.Log
+import android.widget.ImageView
+import com.bumptech.glide.Glide
 import com.example.csapp.ui.drawimage.DrawImageActivity
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
 import retrofit2.Call
@@ -47,6 +53,8 @@ class Downloader {
                     responseBody?.let{saveAudioFileToMediaAndPlay(it) }
                 } else if (content.equals("PAINT")){
                     responseBody?.let{savePaintFileAndStartActivity(it)}
+                } else if (content.equals("IMAGE")) {
+                    responseBody?.let{saveImageFileAndShowDialog(it)}
                 }
 
                 return "Success"
@@ -129,6 +137,33 @@ class Downloader {
             true
         } catch (e: Exception) {
             Log.i("savePaintFileAndStartActivity", e.message.toString())
+            false
+        }
+    }
+
+    suspend fun saveImageFileAndShowDialog(responseBody: ResponseBody): Boolean {
+        return try {
+            withContext(Dispatchers.Main) {
+                val imageDialog = CustomImageDialog(context)
+                val bitmap = BitmapFactory.decodeStream(responseBody.byteStream())
+
+                imageDialog.imageView.setImageBitmap(bitmap)
+                imageDialog.show()
+            }
+
+
+//            val imageDialog = CustomImageDialog(context)
+//
+//            Glide.with(context)
+//                .asBitmap()
+//                .load(responseBody.byteStream())
+//                .into(imageDialog.imageView)
+//            CoroutineScope(Dispatchers.Main).launch {
+//                imageDialog.show()
+//            }
+            true
+        } catch (e: Exception) {
+            Log.i("saveImageFileAndShowDialog", e.message.toString())
             false
         }
     }

@@ -222,7 +222,7 @@ class MainActivity : AppCompatActivity() {
             if (username == null) return ("username null")
 
             val downloader: Downloader = Downloader()
-            return downloader.downloadFile(boardId, content, applicationContext)
+            return downloader.downloadFile(boardId, content, this)
         } catch(e : Exception) {
             return e.message.toString()
         }

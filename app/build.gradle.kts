@@ -62,4 +62,7 @@ dependencies {
     implementation("com.squareup.retrofit2:converter-scalars:2.3.0")
 
     implementation("io.socket:socket.io-client:2.1.0")
+
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 }
