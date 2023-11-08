@@ -755,12 +755,12 @@ class MainActivity : AppCompatActivity() {
             // viewModel의 connectStatus 만 바꾸고 observer에서 처리
             Log.i("OnCSRAudioStarted", "started")
 
-//            if(audioReceivingThread == null){
-//                audioReceivingThread = AudioNetReceiver(this@MainActivity)
-//                audioReceivingThread?.run()
-//            } else {
-//                Log.e("OnCSRAudioStarted", "audioReceivingThread not null")
-//            }
+            if(audioReceivingThread == null){
+                audioReceivingThread = AudioNetReceiver(this@MainActivity)
+                Thread(audioReceivingThread).start()
+            } else {
+                Log.e("OnCSRAudioStarted", "audioReceivingThread not null")
+            }
 
         }
     }
@@ -768,13 +768,13 @@ class MainActivity : AppCompatActivity() {
         override fun call(vararg args: Any?) {
             // viewModel의 connectStatus 만 바꾸고 observer에서 처리
             Log.i("OnCSRAudioStopped", "stopped")
-//
-//            if(audioReceivingThread != null){
-//                audioReceivingThread?.stopReceiving()
-//                audioReceivingThread = null
-//            } else {
-//                Log.e("OnCSRAudioStarted", "audioReceivingThread already null")
-//            }
+
+            if(audioReceivingThread != null){
+                audioReceivingThread?.stopReceiving()
+                audioReceivingThread = null
+            } else {
+                Log.e("OnCSRAudioStarted", "audioReceivingThread already null")
+            }
 
         }
     }
