@@ -8,6 +8,8 @@ import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
+import android.os.Handler
+import android.os.Looper
 import android.provider.MediaStore
 import android.util.Log
 import android.view.KeyEvent
@@ -20,9 +22,12 @@ import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -32,6 +37,7 @@ import com.example.csapp.ui.drawimage.DrawImageActivity
 import com.example.csapp.ui.login.LoginActivity
 import com.example.csapp.ui.main.MainViewModel
 import com.example.csapp.ui.register.CreateMemberActivity
+import com.google.android.material.navigation.NavigationView
 import io.socket.emitter.Emitter
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -68,6 +74,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var imgFilePath : String
 
     private var audioReceivingThread : AudioNetReceiver? = null
+
+    private lateinit var drawer : DrawerLayout
+
+    private var doubleBackToExit = false
 
     /*
      * permissionLauncjer
@@ -123,20 +133,20 @@ class MainActivity : AppCompatActivity() {
             }
     }
 
-    fun getFilePathFromUri(uri: Uri): String? {
-        val contentResolver = contentResolver
-        val projection = arrayOf(MediaStore.Images.Media.DATA)
-        val cursor = contentResolver.query(uri, projection, null, null, null)
-
-        cursor?.use {
-            val columnIndex = it.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
-            if (it.moveToFirst()) {
-                return it.getString(columnIndex)
-            }
-        }
-
-        return null
-    }
+//    fun getFilePathFromUri(uri: Uri): String? {
+//        val contentResolver = contentResolver
+//        val projection = arrayOf(MediaStore.Images.Media.DATA)
+//        val cursor = contentResolver.query(uri, projection, null, null, null)
+//
+//        cursor?.use {
+//            val columnIndex = it.getColumnIndexOrThrow(MediaStore.Images.Media.DATA)
+//            if (it.moveToFirst()) {
+//                return it.getString(columnIndex)
+//            }
+//        }
+//
+//        return null
+//    }
 
     /*
      *퍼미션을 체크하고 없으면 요청한다
@@ -504,6 +514,40 @@ class MainActivity : AppCompatActivity() {
         setContentView(bndMain.root)
 
         setSupportActionBar(bndMain.toolbar)
+        if(supportActionBar == null) Log.e("supportActionBar :", "null")
+        supportActionBar?.setDisplayShowHomeEnabled(true)
+        supportActionBar?.setDisplayHomeAsUpEnabled(true)
+        supportActionBar?.setHomeAsUpIndicator(com.google.android.material.R.drawable.material_ic_menu_arrow_down_black_24dp)
+
+        // action bar  drawer menu 설정
+        drawer = bndMain.drawerLayout
+        var toggle = ActionBarDrawerToggle(this,drawer, R.string.open_drawer,  R.string.close_drawer)
+        drawer.addDrawerListener(toggle)
+        toggle.syncState()
+
+        val navigationView : NavigationView = bndMain.navView
+        navigationView.setNavigationItemSelectedListener(object : NavigationView.OnNavigationItemSelectedListener{
+            override fun onNavigationItemSelected(item: MenuItem): Boolean {
+                when(item.itemId){
+                    R.id.drawerMenuLogin -> {
+                        Log.i("Drawer Menu", "login")
+                        Intent(this@MainActivity, LoginActivity::class.java).also {
+                            getResult.launch(it)
+                        }
+                        drawer.closeDrawers()
+                    }
+                    R.id.drawerMenuRegister -> {
+                        Log.i("Drawer Menu", "register")
+                        val intent = Intent(this@MainActivity, CreateMemberActivity::class.java)
+                        startActivity(intent)
+                        drawer.closeDrawers()
+                    }
+                    else -> { Log.e("Drawer Menu", "no id") }
+                }
+                return true
+            }
+        })
+        // action bar  및  navigation 설정 끝
 
         audioStreamer = AudioNetStreamer(applicationContext)
         audioStreamer.setThreadStoppedListener(object : AudioThreadStoppedListener{
@@ -556,19 +600,7 @@ class MainActivity : AppCompatActivity() {
                         socketManager.sendAudioStopMessage()
                     }
 
-                    // upload는 listner를 만들고 옮겼음
-
-                    // file 생성 임시 확인
-//                val filesDir: File = applicationContext.filesDir
-//                val files: Array<out File>? = filesDir.listFiles()
-//
-//                if (files != null) {
-//                    for (file in files) {
-//                        // Process each file as needed
-//                        Log.d("FileList", file.name)
-//                    }
-//                }
-                }
+                 }
                 btnMicOn.isEnabled = true
             }
 
@@ -696,7 +728,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when(item.itemId){
         R.id.menuLogin -> {
-            Log.i("onCreate>>", "menu1 clicked")
+            Log.i("onLogin>>", "menu1 clicked")
             Intent(this, LoginActivity::class.java).also {
                 getResult.launch(it)
             }
@@ -708,6 +740,10 @@ class MainActivity : AppCompatActivity() {
             startActivity(intent)
             true
         }
+        android.R.id.home -> {
+            drawer.openDrawer(GravityCompat.START)
+            true
+        }
         else -> {
             Log.i("onCreate>>", "else selected")
             super.onOptionsItemSelected(item)
@@ -715,7 +751,7 @@ class MainActivity : AppCompatActivity() {
         //return super.onOptionsItemSelected(item) 위의 else에 넣어줌
     }
 
-    inner class OnCreateRoomListener : Emitter.Listener{
+     inner class OnCreateRoomListener : Emitter.Listener{
         override fun call(vararg args: Any?) {
             Log.i("OnCreateRoomListener", "called ${args[0]}")
         }
@@ -777,6 +813,22 @@ class MainActivity : AppCompatActivity() {
             }
 
         }
+    }
+
+    override fun onBackPressed() {
+        if (doubleBackToExit) {
+            finishAffinity()
+        } else {
+            Toast.makeText(this, "종료하시려면 뒤로가기를 한번 더 눌러주세요.", Toast.LENGTH_SHORT).show()
+            doubleBackToExit = true
+            runDelayed(1500L) {
+                doubleBackToExit = false
+            }
+        }
+    }
+
+    fun runDelayed(millis: Long, function: () -> Unit) {
+        Handler(Looper.getMainLooper()).postDelayed(function, millis)
     }
 
 }

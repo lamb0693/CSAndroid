@@ -11,14 +11,5 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:title="회원가입" />
-    <item
-        android:id="@+id/menu3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:title="menu3" />
-    <item
-        android:id="@+id/menu4"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:title="menu4" />
+
 </menu>
