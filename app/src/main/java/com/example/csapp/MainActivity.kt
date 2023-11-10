@@ -542,6 +542,13 @@ class MainActivity : AppCompatActivity() {
                         startActivity(intent)
                         drawer.closeDrawers()
                     }
+                    R.id.drawerMenuWeb -> {
+                        Log.i("Drawer Menu", "web")
+                        Intent(Intent.ACTION_VIEW, Uri.parse("http://10.100.203.43:3000")).also{
+                            startActivity(it)
+                            drawer.closeDrawers()
+                        }
+                    }
                     else -> { Log.e("Drawer Menu", "no id") }
                 }
                 return true
