@@ -11,9 +11,5 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:title="그림 그려 보내기" />
-    <item
-        android:id="@+id/menuReserved"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:title="예비메뉴" />
+
 </menu>
