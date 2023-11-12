@@ -31,6 +31,7 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.example.csapp.Cons.REACT_URL
 import com.example.csapp.databinding.ActivityMainBinding
 import com.example.csapp.ui.counselList.CouselListViewAdapter
 import com.example.csapp.ui.drawimage.DrawImageActivity
@@ -544,7 +545,7 @@ class MainActivity : AppCompatActivity() {
                     }
                     R.id.drawerMenuWeb -> {
                         Log.i("Drawer Menu", "web")
-                        Intent(Intent.ACTION_VIEW, Uri.parse("http://10.100.203.43:3000")).also{
+                        Intent(Intent.ACTION_VIEW, Uri.parse(REACT_URL)).also{
                             startActivity(it)
                             drawer.closeDrawers()
                         }
