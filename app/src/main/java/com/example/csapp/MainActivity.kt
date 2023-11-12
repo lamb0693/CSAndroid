@@ -1,11 +1,17 @@
 package com.example.csapp
 
+import android.Manifest
 import android.app.Activity
+import android.app.Notification
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Environment
 import android.os.Handler
@@ -22,8 +28,12 @@ import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.GravityCompat
@@ -79,6 +89,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var drawer : DrawerLayout
 
     private var doubleBackToExit = false
+
+    private lateinit var notificationManager : NotificationManager
+    companion object {
+        const val CHANNEL_ID = "Test"
+    }
 
     /*
      * permissionLauncjer
@@ -574,6 +589,9 @@ class MainActivity : AppCompatActivity() {
         // viewModel 이 필요하다 ViewModel 설정후  초기화
         initRecyclerView(bndMain)
 
+        // Notification 초기화
+        createNotificationChannel()
+
         // CounselList를 읽어온다  accessToken이 없으면 되돌아 온다.
         GlobalScope.launch {
             val ret : String = getCounselListFromServer()
@@ -791,6 +809,36 @@ class MainActivity : AppCompatActivity() {
             mainScope.launch {
                 viewModel.setConnectStatus(2)
             }
+
+            // 알람 클릭시 새 intent 띄우려면.. 나는 안 띄울거니
+//            val intent = Intent(this@MainActivity, MainActivity::class.java).apply {
+//                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+//            }
+            //val pendingIntent = PendingIntent.getActivity(this@MainActivity, 101, intent, 0)
+
+            val contents = "상담원과 연결 되었습니다 "
+
+            // Notification
+            var builder01 = NotificationCompat.Builder(this@MainActivity, CHANNEL_ID).apply {
+                setSmallIcon(R.drawable.ic_launcher_foreground)
+                setContentTitle("CSApp")  // Set Title
+                setContentText(contents)   // Set Content
+                priority = NotificationCompat.PRIORITY_DEFAULT  // Set PRIORITY
+                //setContentIntent(pendingIntent) // Notification Click Event, 설정하니 새로 activity가 생기니 문제
+                setAutoCancel(true) // Remove After Click Notification
+            }
+
+            with(NotificationManagerCompat.from(this@MainActivity)) {
+                if (ActivityCompat.checkSelfPermission(
+                        this@MainActivity,
+                        Manifest.permission.POST_NOTIFICATIONS
+                    ) != PackageManager.PERMISSION_GRANTED
+                ) {
+                    return
+                }
+                notify(6, builder01.build())
+            }
+
         }
     }
 
@@ -823,6 +871,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    // back button에 대한 대비
     override fun onBackPressed() {
         if (doubleBackToExit) {
             finishAffinity()
@@ -837,6 +886,20 @@ class MainActivity : AppCompatActivity() {
 
     fun runDelayed(millis: Long, function: () -> Unit) {
         Handler(Looper.getMainLooper()).postDelayed(function, millis)
+    }
+    // back button에 대한 대비 끝
+
+    private fun createNotificationChannel() {
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            val name = "Notification_Ch"
+            val descriptionText = "Test Notification"
+            val channel = NotificationChannel(CHANNEL_ID, name, NotificationManager.IMPORTANCE_DEFAULT).apply {
+                description = descriptionText
+            }
+
+            val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            notificationManager.createNotificationChannel(channel)
+        }
     }
 
 }
