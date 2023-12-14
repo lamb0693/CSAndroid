@@ -1,8 +1,8 @@
-package com.example.csapp
+package com.example.csapp.connectapi
 
+import com.example.csapp.Cons
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import retrofit2.create
 
 object RetrofitObject {
     //private const val BASE_URL = "http://10.100.203.29:8080"
@@ -15,7 +15,7 @@ object RetrofitObject {
             .build()
     }
 
-    fun getApiService():RetrofitService{
+    fun getApiService(): RetrofitService {
         return getRetrofit().create(RetrofitService::class.java)
     }
 }

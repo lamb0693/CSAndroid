@@ -1,4 +1,4 @@
-package com.example.csapp
+package com.example.csapp.dto
 
 import com.google.gson.annotations.SerializedName
 

@@ -8,23 +8,17 @@ import android.graphics.PointF
 import android.util.Log
 import android.view.MotionEvent
 import android.view.View
-import android.widget.Toast
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.ViewModelStoreOwner
-import com.example.csapp.PointSerializable
-import com.example.csapp.SocketManager
+import com.example.csapp.util.PointSerializable
+import com.example.csapp.util.SocketManager
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import java.io.BufferedReader
-import java.io.File
-import java.io.FileInputStream
-import java.io.FileOutputStream
 import java.io.FileReader
-import java.io.FileWriter
 import java.io.IOException
-import java.io.ObjectInputStream
 import java.io.OutputStreamWriter
 
 

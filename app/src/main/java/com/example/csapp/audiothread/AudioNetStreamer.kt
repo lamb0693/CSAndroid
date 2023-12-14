@@ -1,4 +1,4 @@
-package com.example.csapp
+package com.example.csapp.audiothread
 
 import android.annotation.SuppressLint
 import android.content.Context
@@ -7,10 +7,10 @@ import android.media.AudioRecord
 import android.media.MediaPlayer
 import android.media.MediaRecorder
 import android.util.Log
-import androidx.annotation.UiThread
+import com.example.csapp.util.SimpleNotiDialog
+import com.example.csapp.util.SocketManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileInputStream

@@ -1,5 +1,6 @@
-package com.example.csapp
+package com.example.csapp.util
 
+import com.example.csapp.Cons
 import io.socket.client.IO
 import io.socket.client.Socket
 import io.socket.emitter.Emitter
@@ -22,7 +23,7 @@ class SocketManager private constructor(){
     companion object{
         private var instance : SocketManager? =  null
 
-        fun getInstance() : SocketManager{
+        fun getInstance() : SocketManager {
             if(instance == null){
                 instance = SocketManager()
             }

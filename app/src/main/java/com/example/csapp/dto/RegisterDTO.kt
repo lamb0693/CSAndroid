@@ -1,4 +1,4 @@
-package com.example.csapp
+package com.example.csapp.dto
 
 data class RegisterDTO(
     var tel : String,

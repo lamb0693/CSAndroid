@@ -1,11 +1,9 @@
 package com.example.csapp.ui.main
 
-import android.graphics.PointF
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.csapp.CouselListDTO
+import com.example.csapp.util.CouselListDTO
 
 class MainViewModel : ViewModel() {
 
@@ -58,7 +56,7 @@ class MainViewModel : ViewModel() {
         //_currentValue.value = _currentValue.value?.plus(input)
         // observer를 위해  새로운 list로 바꾸어 주어야 함  새로운 객체를 생성 대입함
         val newList = mutableListOf<CouselListDTO>()
-        for(dto:CouselListDTO in counselList) newList.add(dto)
+        for(dto: CouselListDTO in counselList) newList.add(dto)
         _counselList.value = newList
     }
 

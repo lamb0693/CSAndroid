@@ -4,16 +4,10 @@ import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import androidx.lifecycle.lifecycleScope
-import com.example.csapp.RegisterDTO
-import com.example.csapp.RetrofitObject
-import com.example.csapp.RetrofitScalarObject
-import com.example.csapp.RetrofitScalarPlusObject
-import com.example.csapp.TokenStructure
+import com.example.csapp.dto.RegisterDTO
+import com.example.csapp.connectapi.RetrofitScalarPlusObject
 import com.example.csapp.databinding.ActivityCreateMemberBinding
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 
 
 class CreateMemberActivity : AppCompatActivity() {

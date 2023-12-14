@@ -1,8 +1,8 @@
 package com.example.csapp.data
 
 import android.util.Log
-import com.example.csapp.RetrofitObject
-import com.example.csapp.TokenStructure
+import com.example.csapp.connectapi.RetrofitObject
+import com.example.csapp.dto.TokenStructure
 import com.example.csapp.data.model.LoggedInUser
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

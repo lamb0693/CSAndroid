@@ -5,8 +5,8 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import com.example.csapp.CouselListDTO
-import com.example.csapp.GlobalVariable
+import com.example.csapp.util.CouselListDTO
+import com.example.csapp.util.GlobalVariable
 import com.example.csapp.R
 import com.example.csapp.databinding.ItemsRecyclerBinding
 

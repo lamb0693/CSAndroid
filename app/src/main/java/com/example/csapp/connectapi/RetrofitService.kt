@@ -1,6 +1,8 @@
-package com.example.csapp
+package com.example.csapp.connectapi
 
-import okhttp3.Call
+import com.example.csapp.util.CouselListDTO
+import com.example.csapp.dto.RegisterDTO
+import com.example.csapp.dto.TokenStructure
 import okhttp3.MultipartBody
 import okhttp3.ResponseBody
 import retrofit2.http.Body

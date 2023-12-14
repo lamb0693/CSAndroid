@@ -1,34 +1,21 @@
-package com.example.csapp
+package com.example.csapp.connectapi
 
 
-import android.app.Application
 import android.content.ContentValues
 import android.content.Context
 import android.content.Intent
-import android.content.Intent.FLAG_ACTIVITY_NEW_TASK
 import android.graphics.BitmapFactory
 import android.media.MediaPlayer
-import android.os.Environment
-import android.os.FileUtils
 import android.provider.MediaStore
 import android.util.Log
-import android.widget.ImageView
-import com.bumptech.glide.Glide
+import com.example.csapp.util.CustomImageDialog
+import com.example.csapp.util.GlobalVariable
 import com.example.csapp.ui.drawimage.DrawImageActivity
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import okhttp3.ResponseBody
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.HttpException
-import retrofit2.Response
 import java.io.File
 import java.io.FileOutputStream
-import java.io.IOException
-import java.io.OutputStream
 
 
 class Downloader {
@@ -151,16 +138,6 @@ class Downloader {
                 imageDialog.show()
             }
 
-
-//            val imageDialog = CustomImageDialog(context)
-//
-//            Glide.with(context)
-//                .asBitmap()
-//                .load(responseBody.byteStream())
-//                .into(imageDialog.imageView)
-//            CoroutineScope(Dispatchers.Main).launch {
-//                imageDialog.show()
-//            }
             true
         } catch (e: Exception) {
             Log.i("saveImageFileAndShowDialog", e.message.toString())

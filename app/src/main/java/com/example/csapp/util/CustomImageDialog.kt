@@ -1,10 +1,9 @@
-package com.example.csapp
+package com.example.csapp.util
 
 import android.app.Dialog
 import android.content.Context
 import android.widget.ImageView
-import com.bumptech.glide.Glide
-import java.io.File
+import com.example.csapp.R
 
 
 class CustomImageDialog(context: Context) : Dialog(context) {

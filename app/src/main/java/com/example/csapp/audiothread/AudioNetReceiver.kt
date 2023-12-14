@@ -1,10 +1,11 @@
-package com.example.csapp
+package com.example.csapp.audiothread
 
 import android.content.Context
 import android.media.AudioAttributes
 import android.media.AudioFormat
 import android.media.AudioTrack
 import android.util.Log
+import com.example.csapp.util.SocketManager
 import io.socket.emitter.Emitter
 
 

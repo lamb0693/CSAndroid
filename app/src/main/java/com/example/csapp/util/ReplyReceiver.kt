@@ -1,4 +1,4 @@
-package com.example.csapp
+package com.example.csapp.util
 
 import android.app.NotificationManager
 import android.app.RemoteInput

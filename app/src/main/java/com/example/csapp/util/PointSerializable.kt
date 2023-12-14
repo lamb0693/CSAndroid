@@ -1,4 +1,4 @@
-package com.example.csapp
+package com.example.csapp.util
 
 import java.io.Serializable
 

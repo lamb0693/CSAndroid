@@ -1,21 +1,17 @@
 package com.example.csapp.ui.drawimage
 
-import android.graphics.Point
-import android.graphics.PointF
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
-import com.example.csapp.GlobalVariable
+import com.example.csapp.util.GlobalVariable
 import com.example.csapp.R
-import com.example.csapp.RetrofitScalarObject
-import com.example.csapp.SimpleNotiDialog
-import com.example.csapp.SocketManager
+import com.example.csapp.connectapi.RetrofitScalarObject
+import com.example.csapp.util.SimpleNotiDialog
+import com.example.csapp.util.SocketManager
 import com.example.csapp.databinding.ActivityDrawImageBinding
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
@@ -23,10 +19,7 @@ import kotlinx.coroutines.withContext
 import okhttp3.MediaType
 import okhttp3.MultipartBody
 import okhttp3.RequestBody
-import java.io.BufferedReader
 import java.io.File
-import java.io.FileReader
-import java.io.IOException
 
 
 class DrawImageActivity : AppCompatActivity() {

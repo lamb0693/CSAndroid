@@ -1,4 +1,4 @@
-package com.example.csapp
+package com.example.csapp.util
 
 // kotlin 의  object 는 singleton and thread safe.
 // also does not require synchronized

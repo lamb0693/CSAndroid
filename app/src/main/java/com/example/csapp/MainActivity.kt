@@ -2,10 +2,8 @@ package com.example.csapp
 
 import android.Manifest
 import android.app.Activity
-import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
-import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -28,7 +26,6 @@ import android.widget.PopupMenu
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.annotation.RequiresApi
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
@@ -42,12 +39,22 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.csapp.Cons.REACT_URL
+import com.example.csapp.audiothread.AudioNetReceiver
+import com.example.csapp.audiothread.AudioNetStreamer
+import com.example.csapp.audiothread.AudioThreadStoppedListener
+import com.example.csapp.connectapi.Downloader
+import com.example.csapp.connectapi.RetrofitObject
+import com.example.csapp.connectapi.RetrofitScalarObject
 import com.example.csapp.databinding.ActivityMainBinding
 import com.example.csapp.ui.counselList.CouselListViewAdapter
 import com.example.csapp.ui.drawimage.DrawImageActivity
 import com.example.csapp.ui.login.LoginActivity
 import com.example.csapp.ui.main.MainViewModel
 import com.example.csapp.ui.register.CreateMemberActivity
+import com.example.csapp.util.CouselListDTO
+import com.example.csapp.util.GlobalVariable
+import com.example.csapp.util.SimpleNotiDialog
+import com.example.csapp.util.SocketManager
 import com.google.android.material.navigation.NavigationView
 import io.socket.emitter.Emitter
 import kotlinx.coroutines.CoroutineScope
@@ -573,7 +580,7 @@ class MainActivity : AppCompatActivity() {
         // action bar  및  navigation 설정 끝
 
         audioStreamer = AudioNetStreamer(applicationContext)
-        audioStreamer.setThreadStoppedListener(object : AudioThreadStoppedListener{
+        audioStreamer.setThreadStoppedListener(object : AudioThreadStoppedListener {
             override fun onAudioThreadStopped() {
                 GlobalScope.launch {
                     val ret : String = uploadAudio("audio_sample.wav")
